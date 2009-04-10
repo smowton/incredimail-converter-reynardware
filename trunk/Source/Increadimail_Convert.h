@@ -45,11 +45,98 @@ typedef struct {
 */
 
 int email_count( char * );
-void get_email_offset_and_size( char *, unsigned int *, unsigned int *, int, int );
-void encodeblock( unsigned char in[3], unsigned char out[4], int len );
-void encode( FILE *infile, FILE *outfile, int linesize );
-void extract_eml_files( char *filename_data, char *, int offset, unsigned int size );
-void insert_attachments( char *eml_filename, char *attachments_path, char * );
-BOOL DeleteDirectory(const TCHAR*);
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
 
+void get_email_offset_and_size( char *, unsigned int *, unsigned int *, int, int );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void get_database_version( char *, char * );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void encodeblock( unsigned char in[3], unsigned char out[4], int len );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void encode( FILE *infile, FILE *outfile, int linesize );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void extract_eml_files( char *filename_data, char *, int offset, unsigned int size );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void insert_attachments( char *eml_filename, char *attachments_path, char * );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+int DeleteDirectory(const char *);
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
 #endif

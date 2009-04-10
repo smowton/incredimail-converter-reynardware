@@ -16,11 +16,11 @@
 //     Contributor(s):
 //
 //************************************************************************************************
+#define _CRT_SECURE_NO_WARNINGS  // remove the new mircosoft security warnings
 
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
-#include <TCHAR.H>
 
 #include "Increadimail_Convert.h"
 
@@ -36,7 +36,7 @@ unsigned int size;
 unsigned int file_size;
 
    ZeroMemory( &version, sizeof( version ) );
-   helping_hand = CreateFile( filename, GENERIC_READ, NULL, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+   helping_hand = CreateFile( filename, (DWORD) GENERIC_READ, (DWORD) NULL, (DWORD) NULL, (DWORD) OPEN_ALWAYS, (DWORD) FILE_ATTRIBUTE_NORMAL, (DWORD) NULL );
    
    if( helping_hand ) {
       ReadFile( helping_hand, &version, 0x04, &dummy, NULL );
@@ -212,7 +212,7 @@ int attachment_length;
          memset( string_1, 0, MAX_CHAR );                             
          fgets( string_1, MAX_CHAR - 1, input_file );
          if( strncmp( ATTACHMENT,  string_1, 34 ) == 0 ) {
-            attachment_length = strlen(string_1);
+            attachment_length = (int) strlen(string_1);
             strcpy( attachment_name, attachments_path );
             strcat( attachment_name, "\\" );
             strncat( attachment_name, &string_1[34], attachment_length - 35 ); 
@@ -250,7 +250,38 @@ int attachment_length;
    fclose( input_file );
 }
 
+void get_database_version(char *database, char *version ) {
+HANDLE helping_hand;
+int dummy = 1;
+char temp_version[5];
 
-BOOL DeleteDirectory(const TCHAR* sPath) {
-// TODO
+   ZeroMemory( &temp_version, sizeof( temp_version ) );
+   helping_hand = CreateFile( database, GENERIC_READ, 0x00000000, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+   ReadFile( helping_hand, &temp_version, 0x04, &dummy, NULL );
+   CloseHandle( helping_hand );
+
+   strcpy( version, temp_version );
+
 }
+
+int DeleteDirectory(const char *sPath) {
+  SHFILEOPSTRUCT fileop;
+  int ret;
+
+  ZeroMemory( &fileop, sizeof( SHFILEOPSTRUCT ) );
+
+  fileop.hwnd                  = NULL;
+  fileop.wFunc                 = FO_DELETE;
+  fileop.pTo                   = NULL;
+  fileop.fFlags                = FOF_NOCONFIRMATION|FOF_SILENT;  
+  fileop.fAnyOperationsAborted = FALSE;
+  fileop.lpszProgressTitle     = NULL;
+  fileop.hNameMappings         = NULL;
+
+  fileop.pFrom = sPath;
+
+  ret = SHFileOperation(&fileop);
+
+  return( ret );
+}
+

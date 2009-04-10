@@ -212,6 +212,10 @@
 				RelativePath=".\resource.rc"
 				>
 			</File>
+			<File
+				RelativePath=".\reynard.ico"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
