@@ -11,6 +11,8 @@ DefaultGroupName=Reynardware Incredimail Converter
 AllowNoIcons=yes
 LicenseFile=.\Mozilla Public License.txt
 AppPublisherURL=http://code.google.com/p/incredimail-converter-reynardware/
+AppSupportURL=http://code.google.com/p/incredimail-converter-reynardware/
+AppUpdatesURL=http://code.google.com/p/incredimail-converter-reynardware/
 OutputDir=..
 OutputBaseFilename=ReynardWare_Incredimail_Converter_0.2_Installer.exe
 Compression=lzma/max
@@ -25,14 +27,16 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "..\Build\Release\Reynard Incredimail Converter.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Users Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Mozilla Public License.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "gpl-3.0.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\Reynardware Incredimail Converter"; Filename: "{app}\Reynard Incredimail Converter.exe"
-Name: "{group}\Reynardware Incredimail Converter"; Filename: "{app}\Users Guide.pdf"
-Name: "{group}\Reynardware Incredimail Converter"; Filename: "{app}\Mozilla Public License.txt"
-Name: "{group}\Reynardware Incredimail Converter"; Filename: "{app}\gpl-3.0.txt"
+Name: "{group}\Users Guide"; Filename: "{app}\Users Guide.pdf"
+Name: "{group}\GPL3.0.txt"; Filename: "{app}\gpl-3.0.txt"
+Name: "{group}\Mozilla Public License.txt"; Filename: "{app}\Mozilla Public License.txt"
+Name: "{group}\Reynardware Website"; Filename: "http://code.google.com/p/incredimail-converter-reynardware/"
 Name: "{group}\{cm:UninstallProgram,Reynardware Incredimail Converter}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\Reynardware Incredimail Converter"; Filename: "{app}\Reynard Incredimail Converter.exe"; Tasks: desktopicon
 
