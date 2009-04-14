@@ -266,6 +266,7 @@ int e_count;
 unsigned int offset, size;
 int i, result_header, result_database, result_attachment;
 struct _stat buf;
+float percent_complete;
 
    // Zero out the string names
    ZeroMemory( &im_header_filename, sizeof( im_header_filename ) );
@@ -334,14 +335,15 @@ struct _stat buf;
          insert_attachments( eml_filename, im_attachments_directory, export_directory );
 
          // update the progress
-         sprintf_s( debug_str, sizeof("%d of %d"), "%d of %d", i+1 ,e_count );
+         percent_complete =  ( ( (float) (i+1)/ (float) e_count) ) * 100;
+         sprintf_s( debug_str, MAX_CHAR, "%d of %d (%0.0f%%)", i+1 ,e_count, percent_complete );
          SetDlgItemText( global_hwnd, IDC_XOFX, debug_str );
          SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_STEPIT, 0, 0 );
          SendMessage( global_hwnd, WM_PAINT, 0, 0 );
       }
    
       // clean up, state it was done and delete the temp directory
-      sprintf_s( debug_str, sizeof("%d of %d DONE!"), "%d of %d DONE!",i ,e_count );
+      sprintf_s( debug_str, MAX_CHAR, "%d of %d DONE!",i ,e_count );
       SetDlgItemText( global_hwnd, IDC_XOFX, debug_str );
 
       // remove the temporary directory
