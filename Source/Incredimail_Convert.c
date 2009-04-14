@@ -79,19 +79,17 @@ return e_count;
 void get_email_offset_and_size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int e_count ) {
 HANDLE helping_hand;
 int dummy = 1;
-int *offset;
 int i, j;
 char version[5];
 unsigned int file_size, sizer;
 
-   offset = calloc( e_count, sizeof( int ) );
    ZeroMemory( &version, sizeof( char ) * 5 );
 
    helping_hand = CreateFile( filename, GENERIC_READ, 0x00000000, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    ReadFile( helping_hand, &version, 0x04, &dummy, NULL );
    
    SetFilePointer( helping_hand, 0, NULL, FILE_BEGIN );
-   for( i = 0; i < e_count; i++ ) {
+   for( i = 0; i < email_index + 1; i++ ) {
       sizer = 0;
       SetFilePointer( helping_hand, 0x26, NULL, FILE_CURRENT );  // header
 
@@ -114,17 +112,15 @@ unsigned int file_size, sizer;
       SetFilePointer( helping_hand, 0x06, NULL, FILE_CURRENT );
       file_size = 0;
       ReadFile( helping_hand, &file_size, 0x04, &dummy, NULL );
-      offset[i] = file_size;
-      SetFilePointer( helping_hand, 0x08, NULL, FILE_CURRENT );
+      *size = file_size;
+
+      // I think this is the file offset
+      ReadFile( helping_hand, &sizer, 0x04, &dummy, NULL );
+      *file_offset = sizer;
+      
+      SetFilePointer( helping_hand, 0x04, NULL, FILE_CURRENT );
    }
    CloseHandle( helping_hand );
-
-   *size = offset[email_index];
-   for( i = 0; i < email_index; i++ ) {
-      *file_offset += offset[i];
-   }
-
-   free( offset );
 }
 
 

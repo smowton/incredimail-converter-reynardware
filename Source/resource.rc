@@ -68,7 +68,7 @@ BEGIN
     CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER | 0x1,15,128,213,14
     LTEXT           "Progress",IDC_STATIC,16,118,29,8
     LTEXT           "Email Count:",IDC_ECOUNT,21,98,198,8
-    CTEXT           "",IDC_XOFX,169,118,60,8
+    CTEXT           "",IDC_XOFX,169,118,76,8
     PUSHBUTTON      "About",IDC_ABOUT,245,153,50,14
     LTEXT           "Version: n/a",IDC_STATIC6,21,87,187,8
     GROUPBOX        "Incredimail Database Information",IDC_STATIC,15,74,214,40
@@ -82,7 +82,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,58,50,14
     LTEXT           "Incredimail Converter",IDC_STATIC,53,10,72,8
     LTEXT           "By",IDC_STATIC,85,25,9,8
-    LTEXT           "v0.2",IDC_STATIC,129,10,16,8
+    LTEXT           "v0.21",IDC_STATIC,129,10,20,8
     CONTROL         "",IDC_RICHEDIT26,"RichEdit20A",ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | WS_TABSTOP,40,44,128,14,WS_EX_TRANSPARENT
 END
 
