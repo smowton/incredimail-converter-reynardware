@@ -44,7 +44,7 @@ typedef struct {
 } record;
 */
 
-int email_count( char * );
+void email_count( char *, int *, int * );
 //***************************************************************************
 // INPUTS:
 //
@@ -56,7 +56,7 @@ int email_count( char * );
 //
 //***************************************************************************
 
-void get_email_offset_and_size( char *, unsigned int *, unsigned int *, int, int );
+void get_email_offset_and_size( char *, unsigned int *, unsigned int *, int, int, int * );
 //***************************************************************************
 // INPUTS:
 //
