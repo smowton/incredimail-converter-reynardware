@@ -26,13 +26,14 @@
 
 const char *ATTACHMENT = "----------[%ImFilePath%]----------";
 
-int email_count( char *filename ) {
+void email_count( char *filename, int *email_total, int *deleted_emails ) {
 int dummy = 1;
 int i;
 int e_count = 0;
+int d_count = 0;
 HANDLE helping_hand;
 char version[5];
-unsigned int size;
+unsigned int size = 0;
 unsigned int file_size;
 
    ZeroMemory( &version, sizeof( version ) );
@@ -44,7 +45,12 @@ unsigned int file_size;
 
    SetFilePointer( helping_hand, 0, NULL, FILE_BEGIN );
    do {
-      SetFilePointer( helping_hand, 0x26, NULL, FILE_CURRENT );  // header
+      SetFilePointer( helping_hand, 0x0C, NULL, FILE_CURRENT );  // header
+      ReadFile( helping_hand, &size, 0x01, &dummy, NULL );
+      if( size == 0x02 ) {
+        d_count++;
+      }
+      SetFilePointer( helping_hand, 0x19, NULL, FILE_CURRENT );  // header
 
       for( i = 0; i < 3; i++ ) {
          ReadFile( helping_hand, &size, 0x04, &dummy, NULL );
@@ -55,7 +61,7 @@ unsigned int file_size;
          }
       }
 
-      SetFilePointer( helping_hand, 0x0C, NULL, FILE_CURRENT );      
+      SetFilePointer( helping_hand, 0x0C, NULL, FILE_CURRENT );
       ReadFile( helping_hand, &size, 0x04, &dummy, NULL );
       if( !strncmp( version, "V#05", 4 ) ) {
          SetFilePointer( helping_hand, size * 2, NULL, FILE_CURRENT );
@@ -71,12 +77,12 @@ unsigned int file_size;
    CloseHandle( helping_hand );
    e_count--;
 
-
-return e_count;
+   *deleted_emails = d_count;
+   *email_total   = e_count;
 }
 
 
-void get_email_offset_and_size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int e_count ) {
+void get_email_offset_and_size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int e_count, int *deleted_email ) {
 HANDLE helping_hand;
 int dummy = 1;
 int i, j;
@@ -91,7 +97,14 @@ unsigned int file_size, sizer;
    SetFilePointer( helping_hand, 0, NULL, FILE_BEGIN );
    for( i = 0; i < email_index + 1; i++ ) {
       sizer = 0;
-      SetFilePointer( helping_hand, 0x26, NULL, FILE_CURRENT );  // header
+      SetFilePointer( helping_hand, 0x0C, NULL, FILE_CURRENT );  // header
+      ReadFile( helping_hand, &sizer, 0x01, &dummy, NULL );
+      if( sizer == 0x02 ) {
+         *deleted_email = 1;
+      } else {
+         *deleted_email = 0;
+      }
+      SetFilePointer( helping_hand, 0x19, NULL, FILE_CURRENT );
 
       for( j = 0; j < 3; j++ ) {
          ReadFile( helping_hand, &sizer, 0x04, &dummy, NULL );

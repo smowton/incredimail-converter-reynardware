@@ -212,14 +212,6 @@
 				RelativePath=".\resource.rc"
 				>
 			</File>
-			<File
-				RelativePath="..\..\Reynardware Incredimail Converter\Build\reynard.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\reynard.ico"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>
