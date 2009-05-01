@@ -4,7 +4,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{CDD74C77-BCAC-4545-A52B-FC1F575B9900}
 AppName=Reynardware Incredimail Converter
-AppVerName=Reynardware Incredimail Converter 0.21
+AppVerName=Reynardware Incredimail Converter 0.3
 AppPublisher=Reynardware
 DefaultDirName={pf}\Reynardware Incredimail Converter
 DefaultGroupName=Reynardware Incredimail Converter
