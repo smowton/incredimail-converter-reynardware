@@ -37,7 +37,7 @@ unsigned int size = 0;
 unsigned int file_size;
 
    ZeroMemory( &version, sizeof( version ) );
-   helping_hand = CreateFile( filename, (DWORD) GENERIC_READ, (DWORD) NULL, (DWORD) NULL, (DWORD) OPEN_ALWAYS, (DWORD) FILE_ATTRIBUTE_NORMAL, (DWORD) NULL );
+   helping_hand = CreateFile( filename, GENERIC_READ, 0x0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    
    if( helping_hand ) {
       ReadFile( helping_hand, &version, 0x04, &dummy, NULL );
@@ -143,8 +143,8 @@ HANDLE writing_hand;
 int j, k, dummy;
 char extract_data[1024];
 
-      helping_hand = CreateFile( filename_data, GENERIC_READ, NULL, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-      writing_hand = CreateFile( eml_filename, GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+      helping_hand = CreateFile( filename_data, GENERIC_READ, 0x0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+      writing_hand = CreateFile( eml_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
       SetFilePointer( helping_hand, offset, NULL, FILE_BEGIN );
       k = size / 1024;
       for( j = 0; j < k; j++ ) {
@@ -159,7 +159,6 @@ char extract_data[1024];
 }
 
 
-
 void encodeblock( unsigned char in[3], unsigned char out[4], int len )
 {
     out[0] = cb64[ in[0] >> 2 ];
@@ -169,95 +168,93 @@ void encodeblock( unsigned char in[3], unsigned char out[4], int len )
 }
 
 
-void encode( FILE *infile, FILE *outfile, int linesize )
-{
-    unsigned char in[3], out[4];
-    int i, len, blocksout = 0;
+void encode( HANDLE infile, HANDLE outfile, int linesize ) {
 
-    while( !feof( infile ) ) {
-        len = 0;
-        for( i = 0; i < 3; i++ ) {
-            in[i] = (unsigned char) getc( infile );
-            if( !feof( infile ) ) {
-                len++;
-            }
-            else {
-                in[i] = 0;
-            }
-        }
-        if( len ) {
-            encodeblock( in, out, len );
-            for( i = 0; i < 4; i++ ) {
-                putc( out[i], outfile );
-            }
-            blocksout++;
-        }
-        if( blocksout >= (linesize/4) || feof( infile ) ) {
-            if( blocksout ) {
-                fprintf( outfile, "\n" );
-            }
-            blocksout = 0;
-        }
-    }
+unsigned char in[3], out[4];
+int len, blocksout = 0;
+int byteread, temp;
+char new_line[] = {0x0D, 0x0A};
+
+   byteread = 1;
+
+   while( byteread != 0 ) {
+      len = 0;
+      memset( in, 0, sizeof( in ) );
+      ReadFile( infile, in, 0x03, &byteread, NULL );
+      len = byteread;
+      if( len ) {
+         encodeblock( in, out, len );
+         WriteFile( outfile, out, 0x04, &temp, NULL );
+         blocksout++;
+      }
+      if( blocksout >= (linesize/4) || byteread == 0 ) {
+         if( blocksout ) {
+            WriteFile( outfile, new_line, sizeof( new_line ), &temp, NULL );
+         }
+         blocksout = 0;
+      }
+   }
 }
 
 
 void insert_attachments( char *eml_filename, char *attachments_path, char *final_email_filename ) {
-FILE *input_file;
-FILE *output_file;
 
-FILE *encode64_input_file;
-FILE *encode64_output_file;
+HANDLE inputfile, outputfile, encoded_file;
+HANDLE encode64_input_file, encode64_output_file;
 
-char string_1[512];
-char string_2[512];
+DWORD byteswritten;
+char string_1[512], string_2[512];
 char attachment_name[512];
-int attachment_length;
+int attachment_length, read_length, read_encoded_length;
+   
+   inputfile  = CreateFile(eml_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+   outputfile = CreateFile(final_email_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+   read_length = 1;
 
-   fopen_s(&input_file, eml_filename, "r" );
+   if( inputfile && outputfile ) {
+      while( read_length != 0 ) {
+         memset( string_1, 0, MAX_CHAR );
+         read_length = ReadOneLine( inputfile, string_1, MAX_CHAR );
 
-   if( input_file ) {
-      while( !feof( input_file ) ) {
-         memset( string_1, 0, MAX_CHAR );                             
-         fgets( string_1, MAX_CHAR - 1, input_file );
+         // search for the ATTACHMENT string
          if( strncmp( ATTACHMENT,  string_1, 34 ) == 0 ) {
+            // fix the attachment string
             attachment_length = (int) strlen(string_1);
             strcpy( attachment_name, attachments_path );
             strcat( attachment_name, "\\" );
-            strncat( attachment_name, &string_1[34], attachment_length - 35 ); 
-            fopen_s(&encode64_input_file, attachment_name, "rb" );
-            if( encode64_input_file ) {
-               fopen_s(&encode64_output_file, "attachment.bin", "a+" );
-               encode( encode64_input_file, encode64_output_file, 70 );
-               fclose( encode64_input_file );
-               fclose( encode64_output_file );
-            
-               fopen_s(&encode64_output_file, "attachment.bin", "r" );
-               if( encode64_output_file ) {
-                  while( !feof( encode64_output_file ) ) {
-                     memset( string_2, 0, MAX_CHAR );                             
-                     fgets( string_2, MAX_CHAR - 1, encode64_output_file );
-                     fopen_s(&output_file, final_email_filename, "a+" );
-                     if( output_file ) {
-                        fprintf( output_file, "%s", string_2 );
-                        fclose( output_file );
+            strncat( attachment_name, &string_1[34], attachment_length - 36 );  
+
+            // encode the attachement
+            encode64_input_file  = CreateFile(attachment_name, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+            encode64_output_file = CreateFile("attachment.bin", GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY, NULL );
+            if( encode64_input_file && encode64_output_file  ) {
+               encode( encode64_input_file, encode64_output_file, 72 );
+               CloseHandle( encode64_input_file );
+               CloseHandle( encode64_output_file );
+
+               encoded_file = CreateFile("attachment.bin", GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+               if( encoded_file ) {
+                  read_encoded_length = 1;
+                  while( read_encoded_length ) {
+                     memset( string_2, 0, MAX_CHAR );
+                     read_encoded_length = ReadOneLine( encoded_file, string_2, MAX_CHAR );
+                     if( outputfile ) {
+                        WriteFile( outputfile, string_2, read_encoded_length, &byteswritten, NULL );
                      }
                   }
+                  CloseHandle( encoded_file );
+                  DeleteFile( "attachment.bin" );
                }
-               fclose( encode64_output_file );
-               DeleteFile( "attachment.bin" );
             }
          } else {
-            fopen_s(&output_file, final_email_filename, "a+" );
-            if( output_file ) {
-               fprintf( output_file, "%s", string_1 );
-               fclose( output_file );
-            }
+            WriteFile( outputfile, string_1, read_length, &byteswritten, NULL );
          }
       }
    }
-   fclose( input_file );
+   CloseHandle( inputfile );
+   CloseHandle( outputfile );
 }
+
 
 void get_database_version(char *database, char *version ) {
 HANDLE helping_hand;
@@ -294,3 +291,36 @@ int DeleteDirectory(const char *sPath) {
   return( ret );
 }
 
+int ReadOneLine( HANDLE infile, char *buffer, int max_line_length ) {
+DWORD byteread;
+char byte;   
+int index, end = 0;
+
+   // initialize variables
+   byteread = 1;
+   end = 0;
+   index = 0;
+
+   // loop will end if:
+   //    (1) there are no more bytes to read in the file
+   //    (2) a DOS/Windows line return is found
+   //    (3) max line length in the buffer
+   while( byteread != 0 && !end && index < max_line_length ) {
+      ReadFile( infile, &byte, 0x01, &byteread, NULL );
+      if( byteread != 0 ) {
+         buffer[index] = byte;
+         index++;
+         // test if it is line feed
+         if( byte == 0x0D ) {
+            ReadFile( infile, &byte, 0x01, &byteread, NULL );
+            if( byte == 0x0A && byteread != 0 ) {
+               buffer[index] = byte;
+               index++;
+               end = 1;
+            }
+         }
+      }
+   }
+
+   return index;
+}
