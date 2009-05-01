@@ -92,7 +92,7 @@ void encodeblock( unsigned char in[3], unsigned char out[4], int len );
 //
 //***************************************************************************
 
-void encode( FILE *infile, FILE *outfile, int linesize );
+void encode( HANDLE infile, HANDLE outfile, int linesize );
 //***************************************************************************
 // INPUTS:
 //
@@ -139,4 +139,17 @@ int DeleteDirectory(const char *);
 // DESCRIPTION:
 //
 //***************************************************************************
+
+int ReadOneLine( HANDLE infile, char *buffer, int max_line_length );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
 #endif

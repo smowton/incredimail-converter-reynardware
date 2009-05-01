@@ -301,8 +301,8 @@ LoadLibrary(TEXT("Riched20.dll"));
    switch( message ) {
       case WM_INITDIALOG:
          SetDlgItemText( hdwnd, IDC_RICHEDIT26, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\\deflangfe1033{\\fonttbl{\\f0\\fswiss\\fprq2\\fcharset0 Arial;}}{\\colortbl ;\\red0\\green0\\blue255;}\\viewkind4\\uc1\\pard\\f0\\fs20{\\field{\\*\\fldinst{HYPERLINK ""mailto:ReynardWare@gmail.com""}}{\\fldrslt{\\cf1\\ul ReynardWare@gmail.com}}}\\cf0\\ulnone\\f0\\fs20\\par}" );
-         SendDlgItemMessage( hdwnd, IDC_RICHEDIT26, EM_SETEVENTMASK, ENM_LINK, NULL );
-         SendDlgItemMessage( hdwnd, IDC_RICHEDIT26, EM_AUTOURLDETECT, FALSE, NULL );
+         SendDlgItemMessage( hdwnd, IDC_RICHEDIT26, EM_SETEVENTMASK, ENM_LINK, (LPARAM) NULL );
+         SendDlgItemMessage( hdwnd, IDC_RICHEDIT26, EM_AUTOURLDETECT, FALSE, (LPARAM) NULL );
          return 1;
  
       case WM_COMMAND:
