@@ -1,0 +1,11 @@
+== TO DO LIST for v.4 ==
+  * _Still in the planning phase_
+
+=== TO DO LIST for future enhancements ===
+  * Clean up the header files
+  * Fix the about dialog box
+  * Included build instructions and tools on the Wiki pages
+  * Set the path defaults for Incredimail data files and attachments
+  * Write a logging routine for debug situations
+  * Use the Win32 API calls for temp files and directories
+
