@@ -1,3 +1,4 @@
+#labels Featured
 == TO DO LIST for v.4 ==
   * _Still in the planning phase_
 
@@ -8,4 +9,3 @@
   * Set the path defaults for Incredimail data files and attachments
   * Write a logging routine for debug situations
   * Use the Win32 API calls for temp files and directories
-
