@@ -1,0 +1,23 @@
+#labels Featured
+=== Revisions ==
+
+==== v0.3 2009-05-02 _Featured Version_ ===
+  * Add a check box for exporting deleted emails in the database (Issue #3)
+  * Add an indication of alive while exporting (Issue #4)
+  * Major improvement in the converting speed _*(about a 75% Improvement!)*_
+  * Updated User's Manual 
+
+==== v0.21 2009-04-14 ====
+  * Corrected a *major* bug in the offset routine. See Issue #2 for details.
+  * Added a percentage complete at the bottom
+  * Updated user manual
+
+==== v0.2 2009-04-12  ====
+  * Created a thread for the converting.
+  * Added an fox icon
+  * Created a delete function which take cares of the temporary directory
+  * Much better error handling
+  * Added information on the database file
+
+==== v0.1  2009-04-06 ====
+Initial Version!  Just want to get the source and project built so the public can start using the converter.
