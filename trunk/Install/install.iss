@@ -17,6 +17,7 @@ OutputDir=..
 OutputBaseFilename=ReynardWare_Incredimail_Converter_0.3_Installer.exe
 Compression=lzma/max
 SolidCompression=yes
+VersionInfoVersion=0.3
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
