@@ -1,6 +1,4 @@
 #labels Featured
-=== Revisions ==
-
 ==== v0.3 2009-05-02 _Featured Version_ ===
   * Add a check box for exporting deleted emails in the database (Issue #3)
   * Add an indication of alive while exporting (Issue #4)
