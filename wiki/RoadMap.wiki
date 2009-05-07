@@ -1,9 +1,9 @@
 #labels Featured
-== TO DO LIST for v.4 ==
+== Under development for v.4 ==
   * Use the Win32 API calls for temp files and directories
   * Add some icons in the main dialog box
 
-=== TO DO LIST for future enhancements ===
+== TO DO LIST for future enhancements ==
   * Clean up the header files
   * Fix the about dialog box
   ** A "clickable" static text box which launches "mailto:"
