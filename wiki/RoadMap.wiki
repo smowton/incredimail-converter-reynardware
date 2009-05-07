@@ -1,11 +1,13 @@
 #labels Featured
 == TO DO LIST for v.4 ==
-  * _Still in the planning phase_
+  * Use the Win32 API calls for temp files and directories
+  * Add some icons in the main dialog box
 
 === TO DO LIST for future enhancements ===
   * Clean up the header files
   * Fix the about dialog box
+  ** A "clickable" static text box which launches "mailto:"
   * Included build instructions and tools on the Wiki pages
   * Set the path defaults for Incredimail data files and attachments
   * Write a logging routine for debug situations
-  * Use the Win32 API calls for temp files and directories
+  * Maybe convert a whole directory instead of a single database
