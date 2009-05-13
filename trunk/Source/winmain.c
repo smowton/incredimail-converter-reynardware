@@ -29,48 +29,9 @@
 #include <sys/stat.h>
 
 #include "resource.h"
-#include "Increadimail_Convert.h"
-
-BOOL CALLBACK Winload( HWND, UINT, WPARAM, LPARAM );
-//***************************************************************************
-// INPUTS:
-//     HWND hdwnd - The handle of the Dialog Box Window
-//     UNIT message - The dialog box's window messages
-//     WPARM wparam - Wparam for the dialog box 
-//     LPAMRAM lparam - Lparam for the dialog box 
-//
-// OUTPUTS:  None
-//
-// RETURN VALUE: BOOL - (1) Function success and (0) Failure
-//
-// DESCRIPTION:
-//   This is the main function of the Dialog box.
-//
-//***************************************************************************
-
-BOOL CALLBACK About_Box( HWND, UINT, WPARAM, LPARAM );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
-
-void WINAPI process_emails();
-//***************************************************************************
-// INPUTS: None
-//
-// OUTPUTS: None
-//
-// RETURN VALUE: Void
-//
-// DESCRIPTION:  This function processes all the emails within a dialog box
-//
-//***************************************************************************
+#include "increadimail_convert.h"
+#include "about_dlg.h"
+#include "winmain.h"
 
 typedef enum {
    THREAD_NOT_STARTED = 0,
@@ -275,7 +236,6 @@ DWORD                ExitCode;
                if( email_thread == THREAD_IN_PROGRESS ) {
                   GetExitCodeThread( hThread, &ExitCode );
                   TerminateThread( hThread, ExitCode );
-                  DeleteFile( "attachment.bin" );
                }
                CloseHandle( hThread );
 
@@ -293,29 +253,6 @@ DWORD                ExitCode;
    return 0;
 }
 
-// TODO: FIX THIS!
-BOOL CALLBACK About_Box( HWND hdwnd, UINT message, WPARAM wparam, LPARAM lparam ) {
-LoadLibrary(TEXT("Riched20.dll"));
-
-
-   switch( message ) {
-      case WM_INITDIALOG:
-         SetDlgItemText( hdwnd, IDC_RICHEDIT26, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\\deflangfe1033{\\fonttbl{\\f0\\fswiss\\fprq2\\fcharset0 Arial;}}{\\colortbl ;\\red0\\green0\\blue255;}\\viewkind4\\uc1\\pard\\f0\\fs20{\\field{\\*\\fldinst{HYPERLINK ""mailto:ReynardWare@gmail.com""}}{\\fldrslt{\\cf1\\ul ReynardWare@gmail.com}}}\\cf0\\ulnone\\f0\\fs20\\par}" );
-         SendDlgItemMessage( hdwnd, IDC_RICHEDIT26, EM_SETEVENTMASK, ENM_LINK, (LPARAM) NULL );
-         SendDlgItemMessage( hdwnd, IDC_RICHEDIT26, EM_AUTOURLDETECT, FALSE, (LPARAM) NULL );
-         return 1;
- 
-      case WM_COMMAND:
-         switch(LOWORD(wparam)) {
-            case IDOK:
-               EndDialog( hdwnd, 0 );
-            return 1;
-         }
-   }
-
-   return 0;
-}
-
 
 void WINAPI process_emails() {
 
@@ -323,15 +260,15 @@ char im_header_filename[MAX_CHAR];
 char im_database_filename[MAX_CHAR];
 char im_attachments_directory[MAX_CHAR];
 char debug_str[MAX_CHAR];
-char eml_filename[MAX_CHAR];
 char new_eml_filename[MAX_CHAR];
 char export_directory[MAX_CHAR];
-char temp_directory[MAX_CHAR];
+char temp_path[MAX_CHAR];
+char temp_filename[MAX_CHAR];
 
 int e_count, d_count;
 int deleted_email, export_all_email;
 unsigned int offset, size;
-int i, result_header, result_database, result_attachment;
+int i, result_header, result_database, result_attachment, result_create_temp;
 struct _stat buf;
 float percent_complete;
 int real_count = 0;
@@ -342,7 +279,8 @@ int real_count = 0;
    ZeroMemory( &im_attachments_directory, sizeof( im_attachments_directory ) );
    ZeroMemory( &new_eml_filename, sizeof( new_eml_filename ) );
    ZeroMemory( &export_directory, sizeof( export_directory ) );
-   ZeroMemory( &temp_directory, sizeof( temp_directory ) );
+   ZeroMemory( &temp_path, sizeof( temp_path ) );
+   ZeroMemory( &temp_filename, sizeof( temp_filename ) );
 
    SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_SETPOS, 0, 0 );                 // reset the progress bar to 0%
 
@@ -382,14 +320,11 @@ int real_count = 0;
       // get the state of the checkbox
       export_all_email = (int) SendDlgItemMessage( global_hwnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
 
+      // reset the progress bar
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_SETRANGE, 0, (LPARAM) MAKELPARAM (0, e_count));
 
-      // create a temp directory
-      strncpy_s( temp_directory, MAX_CHAR, im_header_filename, strlen( im_database_filename ) - 4 );
-      strcat_s( temp_directory, MAX_CHAR, "_temp" );
-      DeleteDirectory( temp_directory );
-      CreateDirectory( temp_directory, NULL ); 
-      strcat_s( temp_directory, MAX_CHAR, "\\" );
+      // Get temp windows path
+      result_create_temp = GetTempPath( sizeof( temp_path ), temp_path );
 
       for( i = 0; i < e_count; i++ ) {
          offset = 0;
@@ -397,20 +332,20 @@ int real_count = 0;
 
          if( (export_all_email == BST_CHECKED) || !deleted_email ) {
             // setup the temp eml file name
-            ZeroMemory( &eml_filename, sizeof( eml_filename ) );
-            strcpy_s( eml_filename, MAX_CHAR, temp_directory  );
             sprintf_s( new_eml_filename, MAX_CHAR, "email%d.eml", i );
-            strcat_s( eml_filename, MAX_CHAR, new_eml_filename );
 
+            if( result_create_temp ) {
+               GetTempFileName( temp_path, "eml", 0, temp_filename );
+            }
             // extract the eml file in the temp directory
-            extract_eml_files( im_database_filename, eml_filename, offset, size );
+            extract_eml_files( im_database_filename, temp_filename, offset, size );
 
             ZeroMemory( export_directory, sizeof( export_directory ) );
             strncpy_s( export_directory, MAX_CHAR, im_header_filename, strlen( im_database_filename ) - 4 );
             strcat_s( export_directory, MAX_CHAR, "\\" );
             strcat_s( export_directory, MAX_CHAR, new_eml_filename );
-            insert_attachments( eml_filename, im_attachments_directory, export_directory );
-
+            insert_attachments( temp_filename, im_attachments_directory, export_directory );
+            DeleteFile( temp_filename );
          }
          // update the progress
          percent_complete =  ( ( (float) (i+1)/ (float) e_count) ) * 100;
@@ -424,9 +359,7 @@ int real_count = 0;
       sprintf_s( debug_str, MAX_CHAR, "%d of %d DONE!",i ,e_count );
       SetDlgItemText( global_hwnd, IDC_XOFX, debug_str );
 
-      // remove the temporary directory
-      temp_directory[strlen(temp_directory)-1]='\0';  // remove the slash or it will not work
-      DeleteDirectory( temp_directory );
+      //
       email_thread = THREAD_COMPLETED;
    }
 }
