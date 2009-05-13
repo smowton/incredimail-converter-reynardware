@@ -1,7 +1,7 @@
 #labels Featured
 == Under development for v.4 _(to be released in September 2009)_ ==
   * Use the Win32 API calls for temp files and directories
-  * Massively rewrote the About Box clean up
+  * Massively rewrote the About Dialog Box 
     # Made a link to Reynardware@gmail.com
     # Made a link to the project website
     # Cleaned up the version number
