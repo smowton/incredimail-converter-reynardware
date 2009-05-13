@@ -181,7 +181,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Incredimail_Convert.c"
+				RelativePath=".\about_dlg.c"
+				>
+			</File>
+			<File
+				RelativePath=".\incredimail_convert.c"
 				>
 			</File>
 			<File
@@ -195,11 +199,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Increadimail_Convert.h"
+				RelativePath=".\about_dlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\increadimail_convert.h"
 				>
 			</File>
 			<File
 				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\winmain.h"
 				>
 			</File>
 		</Filter>
@@ -210,6 +222,10 @@
 			>
 			<File
 				RelativePath=".\resource.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\reynard.ico"
 				>
 			</File>
 		</Filter>

@@ -20,6 +20,10 @@
 #define IDC_STATIC8                     1022
 #define IDC_ANIMATE1                    1023
 #define IDC_STATIC9                     1024
+#define IDC_EMAIL_LINK                  1026
+#define IDC_WWW_LINK                    1027
+#define IDC_TITLE                       1028
+#define IDC_VERSION                     1029
 
 // Next default values for new objects
 // 
@@ -27,7 +31,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        116
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1025
+#define _APS_NEXT_CONTROL_VALUE         1030
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

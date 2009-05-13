@@ -206,10 +206,16 @@ DWORD byteswritten;
 char string_1[512], string_2[512];
 char attachment_name[512];
 int attachment_length, read_length, read_encoded_length;
-   
+
+char temp_path[MAX_CHAR];
+char temp_filename[MAX_CHAR];
+
+
    inputfile  = CreateFile(eml_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
    outputfile = CreateFile(final_email_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    read_length = 1;
+
+   GetTempPath( sizeof( temp_path ), temp_path );
 
    if( inputfile && outputfile ) {
       while( read_length != 0 ) {
@@ -225,14 +231,15 @@ int attachment_length, read_length, read_encoded_length;
             strncat( attachment_name, &string_1[34], attachment_length - 36 );  
 
             // encode the attachement
+            GetTempFileName( temp_path, "att", 0, temp_filename );
             encode64_input_file  = CreateFile(attachment_name, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-            encode64_output_file = CreateFile("attachment.bin", GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY, NULL );
+            encode64_output_file = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY, NULL );
             if( encode64_input_file && encode64_output_file  ) {
                encode( encode64_input_file, encode64_output_file, 72 );
                CloseHandle( encode64_input_file );
                CloseHandle( encode64_output_file );
 
-               encoded_file = CreateFile("attachment.bin", GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+               encoded_file = CreateFile(temp_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
                if( encoded_file ) {
                   read_encoded_length = 1;
                   while( read_encoded_length ) {
@@ -243,7 +250,7 @@ int attachment_length, read_length, read_encoded_length;
                      }
                   }
                   CloseHandle( encoded_file );
-                  DeleteFile( "attachment.bin" );
+                  DeleteFile( temp_filename );
                }
             }
          } else {

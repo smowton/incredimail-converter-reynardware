@@ -25,25 +25,6 @@
 
 static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-//  TO BE REMOVED
-/*
-typedef struct {
-   unsigned char unknown_header[0x26];
-   unsigned int  from_size;
-   unsigned char from_email[S_LEN];
-   unsigned int  to_size;
-   unsigned char to_email[S_LEN];
-   unsigned int  subject_size;
-   unsigned char subject[S_LEN];
-   unsigned char unknown_header_2[0x0C];
-   unsigned int  pop_size;
-   unsigned char pop_name[S_LEN];
-   unsigned char unknown_header_3[0x06];
-   unsigned int  file_size;
-   unsigned char unknown_header_4[0x08];
-} record;
-*/
-
 void email_count( char *, int *, int * );
 //***************************************************************************
 // INPUTS:
