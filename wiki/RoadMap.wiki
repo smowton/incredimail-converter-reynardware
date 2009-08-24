@@ -1,5 +1,5 @@
 #labels Featured
-== Under development for v.4 _(to be released in June or July 2009)_ ==
+== Under development for v.4 _(to be released in September 2009)_ ==
   * Used the Win32 API calls for temp files and directories paths
   * Massively rewrote the About Dialog Box
     # Made a link to Reynardware@gmail.com
