@@ -12,7 +12,6 @@ BOOL CALLBACK About_Box( HWND hdwnd, UINT message, WPARAM wparam, LPARAM lparam 
 static BOOL email_inrange;  // Is the mouse in range of the static email control box
 static BOOL www_inrange;    // Is the mouse in range of the static www control box
 
-
    switch( message ) {
       case WM_PAINT:
          set_static_text( "Reynardware@gmail.com", IDC_EMAIL_LINK, email_inrange );
@@ -21,21 +20,20 @@ static BOOL www_inrange;    // Is the mouse in range of the static www control b
 
       case WM_INITDIALOG:
          g_hwnd = hdwnd;          // set the global handle for support functions
-         SetDlgItemText( hdwnd, IDC_VERSION, INCREDIMAIL_CONVERTER_VERSION );
+         SetDlgItemText( g_hwnd, IDC_VERSION, INCREDIMAIL_CONVERTER_VERSION );
          return 1;
  
       case WM_MOUSEMOVE:
          email_inrange = in_range( IDC_EMAIL_LINK, lparam );
          www_inrange   = in_range( IDC_WWW_LINK, lparam );
-
-         InvalidateRect( hdwnd, NULL, FALSE );                  
+         SendMessage( g_hwnd, WM_PAINT, 0, 0 );
+         InvalidateRect( g_hwnd, NULL, FALSE);                  
          return 1;
 
       case WM_COMMAND:
          switch(LOWORD(wparam)) {
             case IDOK:
                EndDialog( hdwnd, 0 );
-               PostQuitMessage( 0 );
                return 1;
 
             case IDC_EMAIL_LINK:
@@ -114,8 +112,8 @@ BOOL inrange;
    xpos = GET_X_LPARAM(lparam); 
    ypos = GET_Y_LPARAM(lparam);
 
-   if( xpos > (rect.left - drect.left) && xpos < (rect.left - drect.left) + qrect.right &&
-       ypos >  rect.top - drect.top - 35 && ypos < (rect.top - drect.top - 25) + qrect.bottom) {
+   if( xpos > (DWORD) ( (rect.left - drect.left) ) && xpos < (DWORD) ( (rect.left - drect.left) + qrect.right ) &&
+       ypos >  (DWORD) (rect.top - drect.top - 35) && ypos < (DWORD) ( (rect.top - drect.top - 25) + qrect.bottom )) {
        inrange = TRUE;
    } else {
        inrange = FALSE;

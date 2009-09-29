@@ -52,30 +52,40 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOGEX 0, 0, 313, 198
+IDD_DIALOG1 DIALOGEX 0, 0, 293, 302
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ReynardWare Incredimail Converter"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Convert",IDOK,7,177,50,14
-    PUSHBUTTON      "Exit",IDCANCEL,129,177,50,14
-    PUSHBUTTON      "Browse",IDC_BROWSE,255,25,50,14
-    EDITTEXT        IDC_EDIT1,15,25,226,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Browse",IDC_BROWSE2,255,54,50,14
-    EDITTEXT        IDC_EDIT2,15,54,226,14,ES_AUTOHSCROLL
-    LTEXT           "Attachment Directory",IDC_STATIC,16,45,70,8
-    LTEXT           "Incredimail Database",IDC_STATIC,15,16,68,8
-    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER | 0x1,15,150,228,14
-    LTEXT           "Progress",IDC_STATIC,16,140,29,8
-    LTEXT           "Email Count:",IDC_ECOUNT,20,96,106,8
-    CTEXT           "",IDC_XOFX,169,140,76,8
-    PUSHBUTTON      "About",IDC_ABOUT,255,177,50,14
-    LTEXT           "Version: n/a",IDC_STATIC6,19,85,125,8
-    GROUPBOX        "Incredimail Database Information",IDC_STATIC,15,74,227,60
+    DEFPUSHBUTTON   "Convert",IDOK,7,281,50,14
+    PUSHBUTTON      "Exit",IDCANCEL,129,281,50,14
+    PUSHBUTTON      "Browse",IDC_BROWSE,223,47,50,14
+    EDITTEXT        IDC_EDIT1,61,22,212,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse",IDC_BROWSE2,221,104,50,14
+    EDITTEXT        IDC_EDIT2,59,86,211,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER | 0x1,8,235,277,14
+    LTEXT           "Progress",IDC_STATIC,9,225,29,8
+    LTEXT           "Email Count:",IDC_ECOUNT,12,194,106,8
+    RTEXT           "",IDC_XOFX,197,225,88,8
+    PUSHBUTTON      "About",IDC_ABOUT,235,281,50,14
+    LTEXT           "Version:",IDC_STATIC6,11,182,125,8
+    GROUPBOX        "Incredimail Database Information",IDC_STATIC,7,159,277,61
     CONTROL         "Export All Emails (Including deleted ones!)",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,121,155,10
-    LTEXT           "Deleted Emails in database:",IDC_STATIC8,20,108,116,8
-    LTEXT           "",IDC_STATIC9,100,140,55,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,148,10
+    LTEXT           "Deleted Emails in database:",IDC_STATIC8,12,207,116,8
+    LTEXT           "",IDC_STATIC9,109,225,55,8
+    GROUPBOX        "Attachment Directory",IDC_STATIC,6,73,279,52
+    GROUPBOX        "Incredimail Database",IDC_STATIC,7,7,278,65
+    CONTROL         130,IDC_STATIC,"Static",SS_BITMAP,12,24,43,39
+    CONTROL         131,IDC_STATIC,"Static",SS_BITMAP,12,83,43,39
+    GROUPBOX        "Export Options",IDC_STATIC,7,129,278,26
+    CONTROL         "Export a Single Database",IDC_EXPORT_FILE,"Button",BS_AUTORADIOBUTTON,62,43,97,10
+    CONTROL         "Export a Complete Directory",IDC_EXPORT_DIRECTORY,
+                    "Button",BS_AUTORADIOBUTTON,62,56,107,10
+    LTEXT           "Database Name:",IDC_DATABASE_NAME,11,170,257,8
+    CONTROL         "",IDC_PROGRESS2,"msctls_progress32",NOT WS_VISIBLE | WS_BORDER | 0x1,7,261,278,14
+    LTEXT           "Overall Progress",IDC_OVERALL_PROGRESS,8,251,54,8,NOT WS_VISIBLE
+    RTEXT           "",IDC_OVERALL_PERCENT,205,251,79,8,NOT WS_VISIBLE
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 181, 95
@@ -87,8 +97,8 @@ BEGIN
     LTEXT           "Incredimail Converter",IDC_TITLE,47,10,69,8
     LTEXT           "By",IDC_STATIC,85,25,9,8,SS_NOTIFY
     LTEXT           "v0.3",IDC_VERSION,122,10,52,8
-    LTEXT           "Reynardware@gmail.com",IDC_EMAIL_LINK,49,41,87,8,SS_NOTIFY
-    CONTROL         "Project Website",IDC_WWW_LINK,"Static",SS_LEFTNOWORDWRAP | SS_NOTIFY | WS_GROUP,64,56,56,8
+    CTEXT           "Reynardware@gmail.com",IDC_EMAIL_LINK,49,41,87,8,SS_NOTIFY
+    CTEXT           "Project Website",IDC_WWW_LINK,64,56,56,8,SS_NOTIFY
 END
 
 
@@ -103,9 +113,9 @@ BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 305
+        RIGHTMARGIN, 285
         TOPMARGIN, 7
-        BOTTOMMARGIN, 191
+        BOTTOMMARGIN, 288
     END
 
     IDD_ABOUT, DIALOG
@@ -127,6 +137,16 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_REYNARD             ICON                    "reynard.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP4             BITMAP                  "Database.bmp"
+IDB_BITMAP6             BITMAP                  "Attachment.bmp"
+IDB_BITMAP7             BITMAP                  "Reynard Stamp.bmp"
+IDB_BITMAP8             BITMAP                  "paper_clip.bmp"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

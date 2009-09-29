@@ -23,8 +23,6 @@
 #define S_LEN 1024*2
 #define MAX_CHAR 256
 
-static const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
 void email_count( char *, int *, int * );
 //***************************************************************************
 // INPUTS:
@@ -50,30 +48,6 @@ void get_email_offset_and_size( char *, unsigned int *, unsigned int *, int, int
 //***************************************************************************
 
 void get_database_version( char *, char * );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
-
-void encodeblock( unsigned char in[3], unsigned char out[4], int len );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
-
-void encode( HANDLE infile, HANDLE outfile, int linesize );
 //***************************************************************************
 // INPUTS:
 //
@@ -122,6 +96,18 @@ int DeleteDirectory(const char *);
 //***************************************************************************
 
 int ReadOneLine( HANDLE infile, char *buffer, int max_line_length );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+int FindDatabaseFiles( char *directory_search, char *temp_file_listing );
 //***************************************************************************
 // INPUTS:
 //

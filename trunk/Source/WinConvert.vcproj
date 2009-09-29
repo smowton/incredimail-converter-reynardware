@@ -96,6 +96,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
+			UseOfMFC="1"
 			CharacterSet="0"
 			WholeProgramOptimization="1"
 			>
@@ -119,8 +120,8 @@
 				Optimization="0"
 				WholeProgramOptimization="false"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
-				RuntimeLibrary="2"
-				BufferSecurityCheck="false"
+				RuntimeLibrary="0"
+				BufferSecurityCheck="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -137,7 +138,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				UseLibraryDependencyInputs="true"
 				UseUnicodeResponseFiles="false"
+				AdditionalDependencies="kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib"
 				OutputFile="$(OutDir)\Reynard Incredimail Converter.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
@@ -185,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\base64.c"
+				>
+			</File>
+			<File
 				RelativePath=".\incredimail_convert.c"
 				>
 			</File>
@@ -200,6 +207,10 @@
 			>
 			<File
 				RelativePath=".\about_dlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\base64.h"
 				>
 			</File>
 			<File
@@ -221,7 +232,23 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\Attachment.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Database.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\paper_clip.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\Reynard Stamp.bmp"
 				>
 			</File>
 			<File

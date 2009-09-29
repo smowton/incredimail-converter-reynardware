@@ -22,7 +22,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "Increadimail_Convert.h"
+#include "increadimail_convert.h"
+#include "base64.h"
 
 const char *ATTACHMENT = "----------[%ImFilePath%]----------";
 
@@ -159,44 +160,6 @@ char extract_data[1024];
 }
 
 
-void encodeblock( unsigned char in[3], unsigned char out[4], int len )
-{
-    out[0] = cb64[ in[0] >> 2 ];
-    out[1] = cb64[ ((in[0] & 0x03) << 4) | ((in[1] & 0xf0) >> 4) ];
-    out[2] = (unsigned char) (len > 1 ? cb64[ ((in[1] & 0x0f) << 2) | ((in[2] & 0xc0) >> 6) ] : '=');
-    out[3] = (unsigned char) (len > 2 ? cb64[ in[2] & 0x3f ] : '=');
-}
-
-
-void encode( HANDLE infile, HANDLE outfile, int linesize ) {
-
-unsigned char in[3], out[4];
-int len, blocksout = 0;
-int byteread, temp;
-char new_line[] = {0x0D, 0x0A};
-
-   byteread = 1;
-
-   while( byteread != 0 ) {
-      len = 0;
-      memset( in, 0, sizeof( in ) );
-      ReadFile( infile, in, 0x03, &byteread, NULL );
-      len = byteread;
-      if( len ) {
-         encodeblock( in, out, len );
-         WriteFile( outfile, out, 0x04, &temp, NULL );
-         blocksout++;
-      }
-      if( blocksout >= (linesize/4) || byteread == 0 ) {
-         if( blocksout ) {
-            WriteFile( outfile, new_line, sizeof( new_line ), &temp, NULL );
-         }
-         blocksout = 0;
-      }
-   }
-}
-
-
 void insert_attachments( char *eml_filename, char *attachments_path, char *final_email_filename ) {
 
 HANDLE inputfile, outputfile, encoded_file;
@@ -330,4 +293,50 @@ int index, end = 0;
    }
 
    return index;
+}
+
+int FindDatabaseFiles( char *directory_search, char *temp_file_listing ) {
+WIN32_FIND_DATA FindFileData;
+HANDLE hFind, list_output;
+
+char database_filename[MAX_CHAR];
+char temp_path[MAX_CHAR];
+char temp_filename[MAX_CHAR];
+char temp_string[MAX_CHAR];
+
+DWORD result_create_temp, dummy;
+
+int total_count = 1;
+
+   ZeroMemory( &database_filename, sizeof( database_filename ) );
+   ZeroMemory( &temp_path, sizeof( temp_path ) );
+   ZeroMemory( &temp_filename, sizeof( temp_filename ) );
+   ZeroMemory( &temp_string, sizeof( temp_string ) );
+
+   strcpy( database_filename, directory_search );
+   strcat( database_filename, "\\*.imm" );
+
+   // Get temp windows path
+   result_create_temp = GetTempPath( sizeof( temp_path ), temp_path );
+   GetTempFileName( temp_path, "lst", 0, temp_filename );
+   
+   list_output = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+   
+   hFind = FindFirstFile(database_filename, &FindFileData);
+
+   sprintf(temp_string, "%s\\%s%c%c", directory_search, FindFileData.cFileName, 0x0D, 0x0A );
+   WriteFile( list_output, temp_string, (DWORD) strlen( temp_string ), &dummy, NULL );
+
+   while( FindNextFile(hFind, &FindFileData) != 0 ) {
+      sprintf(temp_string, "%s\\%s%c%c", directory_search, FindFileData.cFileName, 0x0D, 0x0A );
+      WriteFile( list_output, temp_string, (DWORD) strlen( temp_string ), &dummy, NULL );
+      total_count++;
+   }
+
+   strcpy( temp_file_listing, temp_filename );
+
+   FindClose( hFind );
+   CloseHandle( list_output );
+
+   return total_count;
 }
