@@ -17,14 +17,10 @@
 //
 //************************************************************************************************
 
-#ifndef __ABOUT_DLG__
-#define __ABOUT_DLG__
+#ifndef __BASE_64__
+#define __BASE_64__
 
-// VERSION*****************************************
-#define INCREDIMAIL_CONVERTER_VERSION "v0.31 (BETA)"
-//*************************************************
-
-BOOL CALLBACK About_Box( HWND, UINT, WPARAM, LPARAM );
+void encodeblock( unsigned char in[3], unsigned char out[4], int len );
 //***************************************************************************
 // INPUTS:
 //
@@ -36,19 +32,7 @@ BOOL CALLBACK About_Box( HWND, UINT, WPARAM, LPARAM );
 //
 //***************************************************************************
 
-void set_static_text( char *text, DWORD id, BOOL underline );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
-
-BOOL in_range( DWORD id, LPARAM lparam );
+void encode( HANDLE infile, HANDLE outfile, int linesize );
 //***************************************************************************
 // INPUTS:
 //
