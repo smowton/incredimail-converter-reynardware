@@ -21,7 +21,7 @@
 #define __ABOUT_DLG__
 
 // VERSION*****************************************
-#define INCREDIMAIL_CONVERTER_VERSION "v0.31 (BETA)"
+#define INCREDIMAIL_CONVERTER_VERSION "v0.4"
 //*************************************************
 
 BOOL CALLBACK About_Box( HWND, UINT, WPARAM, LPARAM );
