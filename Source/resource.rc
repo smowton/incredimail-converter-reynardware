@@ -143,8 +143,6 @@ IDI_REYNARD             ICON                    "reynard.ico"
 // Bitmap
 //
 
-IDB_BITMAP4             BITMAP                  "Database.bmp"
-IDB_BITMAP6             BITMAP                  "Attachment.bmp"
 IDB_BITMAP7             BITMAP                  "Reynard Stamp.bmp"
 IDB_BITMAP8             BITMAP                  "paper_clip.bmp"
 #endif    // English (U.S.) resources
