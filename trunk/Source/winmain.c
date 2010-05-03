@@ -95,6 +95,9 @@ char version[5];
 int e_count;  // email count
 int d_count;  // deleted email count
 static int blink = 0;  // blink status
+int i;
+
+int dialog_buttons[] = { IDOK, IDC_BROWSE, IDC_BROWSE2, IDC_CHECK1, IDC_EXPORT_FILE, IDC_EXPORT_DIRECTORY };
 
 OPENFILENAME         openfile;
 BROWSEINFO           bi;
@@ -117,22 +120,18 @@ static DWORD         export_directory;
    if( email_thread == THREAD_COMPLETED ) {
       KillTimer(hdwnd, 1);
 
+      sprintf_s( debug_str2, MAX_CHAR, " " );
+      SetDlgItemText( hdwnd, IDC_STATIC9, debug_str2 );            
+
       // reset the status of the thread
       email_thread = THREAD_NOT_STARTED;
 
       // enable all buttons again
-      control = GetDlgItem( global_hwnd, IDOK );
-      Button_Enable( control, 1 );
-      control = GetDlgItem( global_hwnd, IDC_BROWSE );
-      Button_Enable( control, 1 );
-      control = GetDlgItem( global_hwnd, IDC_BROWSE2 );
-      Button_Enable( control, 1 );
-      control = GetDlgItem( global_hwnd, IDC_CHECK1 );
-      Button_Enable( control, 1 );
-      control = GetDlgItem( global_hwnd, IDC_EXPORT_FILE );
-      Button_Enable( control, 1 );
-      control = GetDlgItem( global_hwnd, IDC_EXPORT_DIRECTORY );
-      Button_Enable( control, 1 );
+      for( i = 0; i < 6; i++ ) {
+         control = GetDlgItem( global_hwnd, dialog_buttons[i] );
+         Button_Enable( control, 1 );
+      }
+      InvalidateRect( hdwnd, NULL, FALSE);  //  Redraw the Windows
    }
 
    switch( message ) {
@@ -258,25 +257,12 @@ static DWORD         export_directory;
                return 1;
 
             case IDOK:  // OK Button
-               // disable all buttons
-               control = GetDlgItem( global_hwnd, IDOK );
-               Button_Enable( control, 0 );
-               control = GetDlgItem( global_hwnd, IDC_BROWSE );
-               Button_Enable( control, 0 );
-               control = GetDlgItem( global_hwnd, IDC_BROWSE2 );
-               Button_Enable( control, 0 );
-               control = GetDlgItem( global_hwnd, IDC_CHECK1 );
-               Button_Enable( control, 0 );
-               control = GetDlgItem( global_hwnd, IDC_EXPORT_FILE );
-               Button_Enable( control, 0 );
-               control = GetDlgItem( global_hwnd, IDC_EXPORT_DIRECTORY );
-               Button_Enable( control, 0 );
-
                GetDlgItemText( hdwnd, IDC_EDIT1, (LPSTR) &im_database_filename, 256 );       // get the incredimail database name
                GetDlgItemText( hdwnd, IDC_EDIT2, (LPSTR) &im_attachments_directory, 256 );   // get the attachement directory name
 
                if( im_database_filename[0] != '\0' && im_attachments_directory[0] != '\0' ) {
-                     
+
+                  export_directory = (int) SendDlgItemMessage( global_hwnd, IDC_EXPORT_DIRECTORY, BM_GETCHECK, 0, 0);
                   // execute a thread for processing emails
                   if( export_directory ) {
                      hThread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) process_email_directory, 0, 0, &dwThreadId );
@@ -285,6 +271,12 @@ static DWORD         export_directory;
                   }
                   if( hThread ) {
                      email_thread = THREAD_IN_PROGRESS;
+
+                     // disable all buttons
+                     for( i = 0; i < 6; i++ ) {
+                        control = GetDlgItem( global_hwnd, dialog_buttons[i] );
+                        Button_Enable( control, 0 );
+                     }
                   }
                   SetTimer( hdwnd, 1, 500, (TIMERPROC) NULL );  // Start the blinking
                   SendDlgItemMessage( hdwnd, IDOK, BN_DISABLE, 0, 0 );
@@ -449,8 +441,8 @@ int real_count = 0;
       sprintf_s( debug_str, MAX_CHAR, "%d of %d DONE!",i ,e_count );
       SetDlgItemText( global_hwnd, IDC_XOFX, debug_str );
 
-      email_thread = THREAD_COMPLETED;
    }
+   email_thread = THREAD_COMPLETED;
 }
 
 
