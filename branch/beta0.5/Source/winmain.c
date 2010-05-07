@@ -215,29 +215,25 @@ static DWORD         export_directory;
 
                   if( GetOpenFileName( &openfile ) == TRUE ) {
                      SetDlgItemText( hdwnd, IDC_EDIT1, im_database_filename );
-                     strncpy_s( im_header_filename, MAX_CHAR ,im_database_filename, strlen( im_database_filename ) - 3 );
-                     strcat_s( im_header_filename, MAX_CHAR, "imh" );
-                     email_count( im_header_filename, &e_count, &d_count );
 
-                     // get version of the database -- report it is v4, v5, or unknown
-                     ZeroMemory( &version, sizeof( version ) );
-                     get_database_version( im_header_filename, version );
-                     if( strcmp( version, "V#04" ) == 0 ) {
-                        SetDlgItemText( hdwnd, IDC_STATIC6, "Version: 4" );
-                     } else if( strcmp( version, "V#05" ) == 0 ) {
-                        SetDlgItemText( hdwnd, IDC_STATIC6, "Version: 5" );
+                     // get the directory (reuse varible im_header_filename)
+                     strncpy_s( im_header_filename, MAX_CHAR , im_database_filename, strlen( im_database_filename ) - strlen( openfile.lpstrFileTitle ) );
+                     if( FindIncredimailVersion( im_header_filename ) == INCREDIMAIL_XE ) {
+                        strncpy_s( im_header_filename, MAX_CHAR ,im_database_filename, strlen( im_database_filename ) - 3 );
+                        strcat_s( im_header_filename, MAX_CHAR, "imh" );
+                        email_count( im_header_filename, &e_count, &d_count );
+                        SetDlgItemText( hdwnd, IDC_STATIC6, "Version: Incredimail XE" );
                      } else {
-                        SetDlgItemText( hdwnd, IDC_STATIC6, "Version: n/a" );
-                        MessageBox( hdwnd, "Unknown format!\nConverting will produce unexpected results!", "Warning", MB_OK );
+                        Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
+                        SetDlgItemText( hdwnd, IDC_STATIC6, "Version: Incredimail 2" );
                      }
-
                      sprintf_s( debug_str, MAX_CHAR, "Email Count: %d", e_count );
                      SetDlgItemText( hdwnd, IDC_ECOUNT, debug_str );
                      sprintf_s( debug_str, MAX_CHAR, "Deleted Emails: %d", d_count );
                      SetDlgItemText( hdwnd, IDC_STATIC8, debug_str );
                      sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_header_filename );
                      SetDlgItemText( hdwnd, IDC_DATABASE_NAME, debug_str );
-                   }
+                  }
                }
                return 1;
 
@@ -354,6 +350,9 @@ int i, result_header, result_database, result_attachment, result_create_temp;
 struct _stat buf;
 float percent_complete;
 int real_count = 0;
+char *pdest;
+
+enum INCREDIMAIL_VERSION incredimail_version;
 
    // Zero out the string names
    ZeroMemory( &im_header_filename, sizeof( im_header_filename ) );
@@ -369,11 +368,21 @@ int real_count = 0;
    GetDlgItemText( global_hwnd, IDC_EDIT1, (LPSTR) &im_database_filename, 256 );       // get the incredimail database name
    GetDlgItemText( global_hwnd, IDC_EDIT2, (LPSTR) &im_attachments_directory, 256 );   // get the attachement directory name
 
-   // get the header filename
-   strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
-   strcat_s( im_header_filename, MAX_CHAR, "imh" );
+   pdest = strrchr( im_database_filename, '\\' );
+   strncpy_s( temp_path, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
 
-   result_header     = _stat( im_header_filename, &buf );
+   // get incredimail version
+   incredimail_version = FindIncredimailVersion( temp_path );
+   if( incredimail_version == INCREDIMAIL_XE ) {
+      // get the header filename
+      strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
+      strcat_s( im_header_filename, MAX_CHAR, "imh" );
+
+      result_header     = _stat( im_header_filename, &buf );
+   } else {
+      result_header     = 0;
+   }
+
    result_database   = _stat( im_database_filename, &buf );
    result_attachment = _stat( im_attachments_directory, &buf );
 
@@ -388,7 +397,7 @@ int real_count = 0;
       }
    } else {
       // the export directory is based off of the database name
-      strncpy_s( export_directory, MAX_CHAR, im_header_filename, strlen( im_database_filename ) - 4 );
+      strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
       DeleteDirectory( export_directory );
       CreateDirectory( export_directory, NULL );
       strcat_s( export_directory, MAX_CHAR, "\\" );
@@ -397,7 +406,11 @@ int real_count = 0;
       e_count = 0;
       d_count = 0;
 
-      email_count( im_header_filename, &e_count, &d_count );
+      if( incredimail_version == INCREDIMAIL_XE ) {
+         email_count( im_header_filename, &e_count, &d_count );
+      } else {
+         Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
+      }
 
       // get the state of the checkbox
       export_all_email = (int) SendDlgItemMessage( global_hwnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
@@ -410,7 +423,11 @@ int real_count = 0;
 
       for( i = 0; i < e_count; i++ ) {
          offset = 0;
-         get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
+         if( incredimail_version == INCREDIMAIL_XE ) {
+            get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
+         } else {
+            Incredimail_2_Get_Email_Offset_and_Size( im_database_filename, &offset, &size, i, &deleted_email );
+         }
 
          if( (export_all_email == BST_CHECKED) || !deleted_email ) {
             // setup the temp eml file name
@@ -423,7 +440,7 @@ int real_count = 0;
             extract_eml_files( im_database_filename, temp_filename, offset, size );
 
             ZeroMemory( export_directory, sizeof( export_directory ) );
-            strncpy_s( export_directory, MAX_CHAR, im_header_filename, strlen( im_database_filename ) - 4 );
+            strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
             strcat_s( export_directory, MAX_CHAR, "\\" );
             strcat_s( export_directory, MAX_CHAR, new_eml_filename );
             insert_attachments( temp_filename, im_attachments_directory, export_directory );
@@ -456,7 +473,6 @@ char debug_str[MAX_CHAR];
 char new_eml_filename[MAX_CHAR];
 char temp_path[MAX_CHAR];
 char temp_filename[MAX_CHAR];
-char version[MAX_CHAR];
 
 HANDLE inputfile;
 
@@ -469,6 +485,9 @@ float percent_complete;
 
 DWORD result_create_temp;
 struct _stat buf;
+
+char *pdest;
+enum INCREDIMAIL_VERSION incredimail_version;
 
    // Zero out the string names
    ZeroMemory( &temp_file_listing, sizeof( temp_file_listing ) );
@@ -513,13 +532,22 @@ struct _stat buf;
             sprintf_s( debug_str, MAX_CHAR, "%d of %d (%0.0f%%)", j ,total_count, percent_complete );
             SetDlgItemText( global_hwnd, IDC_OVERALL_PERCENT, debug_str );
 
-            // get the header filename
-            im_database_filename[strlen(im_database_filename)-2] = 0;
-            strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
-            strcat_s( im_header_filename, MAX_CHAR, "imh" );
+            // get incredimail version
+            pdest = strrchr( im_database_filename, '\\' );
+            strncpy_s( temp_path, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
+            incredimail_version = FindIncredimailVersion( temp_path );
+
+            if( incredimail_version == INCREDIMAIL_XE ) {
+               // get the header filename
+               im_database_filename[strlen(im_database_filename)-2] = 0;
+               strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
+               strcat_s( im_header_filename, MAX_CHAR, "imh" );
+            } else {
+            
+            }
 
             // the export directory is based off of the database name
-            strncpy_s( export_directory, MAX_CHAR, im_header_filename, strlen( im_database_filename ) - 4 );
+            strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
             DeleteDirectory( export_directory );
             CreateDirectory( export_directory, NULL );
             strcat_s( export_directory, MAX_CHAR, "\\" );
@@ -528,17 +556,16 @@ struct _stat buf;
             e_count = 0;
             d_count = 0;
 
-            email_count( im_header_filename, &e_count, &d_count );
-
-            // get version of the database -- report it is v4, v5, or unknown
-            ZeroMemory( &version, sizeof( version ) );
-            get_database_version( im_header_filename, version );
-            if( strcmp( version, "V#04" ) == 0 ) {
-               SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: 4" );
-            } else if( strcmp( version, "V#05" ) == 0 ) {
-               SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: 5" );
+            if( incredimail_version == INCREDIMAIL_XE ) {
+               email_count( im_header_filename, &e_count, &d_count );
             } else {
-               SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: n/a" );
+               //Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
+            }
+
+            if( incredimail_version == INCREDIMAIL_XE ) {
+               SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: Incredimail XE" );
+            } else {
+               SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: Incredimail 2" );
             }
 
             sprintf_s( debug_str, MAX_CHAR, "Email Count: %d", e_count );
@@ -546,7 +573,7 @@ struct _stat buf;
             sprintf_s( debug_str, MAX_CHAR, "Deleted Emails: %d", d_count );
             SetDlgItemText( global_hwnd, IDC_STATIC8, debug_str );
 
-            sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_header_filename );
+            sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_database_filename );
             SetDlgItemText( global_hwnd, IDC_DATABASE_NAME, debug_str );
 
             // get the state of the checkbox
@@ -560,7 +587,11 @@ struct _stat buf;
 
             for( i = 0; i < e_count; i++ ) {
                offset = 0;
-               get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
+               if( incredimail_version == INCREDIMAIL_XE ) {
+                  get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
+               } else {
+                  //Incredimail_2_Get_Email_Offset_and_Size( im_database_filename, &offset, &size, i, &deleted_email );
+               }
 
                if( (export_all_email == BST_CHECKED) || !deleted_email ) {
                   // setup the temp eml file name
@@ -573,7 +604,7 @@ struct _stat buf;
                   extract_eml_files( im_database_filename, temp_filename, offset, size );
 
                   ZeroMemory( export_directory, sizeof( export_directory ) );
-                  strncpy_s( export_directory, MAX_CHAR, im_header_filename, strlen( im_database_filename ) - 4 );
+                  strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
                   strcat_s( export_directory, MAX_CHAR, "\\" );
                   strcat_s( export_directory, MAX_CHAR, new_eml_filename );
                   insert_attachments( temp_filename, im_attachments_directory, export_directory );
