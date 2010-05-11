@@ -559,7 +559,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
             if( incredimail_version == INCREDIMAIL_XE ) {
                email_count( im_header_filename, &e_count, &d_count );
             } else {
-               //Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
+               Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
             }
 
             if( incredimail_version == INCREDIMAIL_XE ) {
@@ -590,7 +590,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
                if( incredimail_version == INCREDIMAIL_XE ) {
                   get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
                } else {
-                  //Incredimail_2_Get_Email_Offset_and_Size( im_database_filename, &offset, &size, i, &deleted_email );
+                  Incredimail_2_Get_Email_Offset_and_Size( im_database_filename, &offset, &size, i, &deleted_email );
                }
 
                if( (export_all_email == BST_CHECKED) || !deleted_email ) {
