@@ -4,7 +4,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{CDD74C77-BCAC-4545-A52B-FC1F575B9900}
 AppName=Reynardware Incredimail Converter
-AppVerName=Reynardware Incredimail Converter 0.3
+AppVerName=Reynardware Incredimail Converter 0.5
 AppPublisher=Reynardware
 DefaultDirName={pf}\Reynardware Incredimail Converter
 DefaultGroupName=Reynardware Incredimail Converter
@@ -14,10 +14,10 @@ AppPublisherURL=http://code.google.com/p/incredimail-converter-reynardware/
 AppSupportURL=http://code.google.com/p/incredimail-converter-reynardware/
 AppUpdatesURL=http://code.google.com/p/incredimail-converter-reynardware/
 OutputDir=..
-OutputBaseFilename=ReynardWare_Incredimail_Converter_0.3_Installer.exe
+OutputBaseFilename=ReynardWareIncreidmailConverter-0.5-Setup.exe
 Compression=lzma/max
 SolidCompression=yes
-VersionInfoVersion=0.3
+VersionInfoVersion=0.5
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
