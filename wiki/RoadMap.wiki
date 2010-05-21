@@ -1,16 +1,9 @@
 #labels Featured
-== Under development for v.4 _(to be released in September 2009)_ ==
-  * Used the Win32 API calls for temp files and directories paths
-  * Massively rewrote the About Dialog Box
-    # Made a link to Reynardware@gmail.com
-    # Made a link to the project website
-    # Made a define for the version number
-  * Added a console routine for debug situations (only in code right now)
-  * Added functionality to convert a complete directory of database files
-  * Added icons in the main dialog box
+== Version 0.51 ==
+  * Bug fixes (if needed)
+  * Set the path defaults for Incredimail data files and attachments
 
 == TO DO LIST for future enhancements ==
   * Clean up the header files
   * Included build instructions and tools on the Wiki pages
-  * Set the path defaults for Incredimail data files and attachments
   * Maybe a logging routine?
