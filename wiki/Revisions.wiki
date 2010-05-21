@@ -1,5 +1,15 @@
 #labels Featured
-==== v0.3 2009-05-02 _Featured Version_ ===
+==== v0.5 2010-05-20 _Featured Version_ === 
+   * Added the ability to convert Incredimail 2 database files
+   * Updated Users Manual (of course)
+   * Corrected Issue #5 – Changed the converter to be statically complied
+   * Implemented a directory conversion
+   * Completely updated and rewrote the about dialog box 
+
+==== v0.4 ====
+   * Superseded by v0.5
+
+==== v0.3 2009-05-02 ====
   * Add a check box for exporting deleted emails in the database (Issue #3)
   * Add an indication of alive while exporting (Issue #4)
   * Major improvement in the converting speed _*(about a 75% Improvement!)*_
