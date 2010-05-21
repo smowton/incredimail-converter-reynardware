@@ -14,8 +14,9 @@ AppPublisherURL=http://code.google.com/p/incredimail-converter-reynardware/
 AppSupportURL=http://code.google.com/p/incredimail-converter-reynardware/
 AppUpdatesURL=http://code.google.com/p/incredimail-converter-reynardware/
 OutputDir=..
-OutputBaseFilename=ReynardWareIncreidmailConverter-0.5-Setup.exe
+OutputBaseFilename=ReynardWareIncredimailConverter-0.5-Setup.exe
 Compression=lzma/max
+PrivilegesRequired=none
 SolidCompression=yes
 VersionInfoVersion=0.5
 
