@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "sqlite3.h"
 #include "increadimail_convert.h"
 #include "base64.h"
 
@@ -339,4 +340,184 @@ int total_count = 1;
    CloseHandle( list_output );
 
    return total_count;
+}
+
+enum INCREDIMAIL_VERSIONS FindIncredimailVersion( char *directory_search ) {
+char temp_path[MAX_CHAR];
+enum INCREDIMAIL_VERSIONS ret;
+WIN32_FIND_DATA FindFileData;
+HANDLE hFind;
+
+   // is there an Incredimail XE header file 
+   strcpy( temp_path, directory_search );
+   strcat( temp_path, "\\*.imh");
+   hFind = FindFirstFile(temp_path, &FindFileData);
+
+   if( hFind != INVALID_HANDLE_VALUE ) {
+      ret = INCREDIMAIL_XE;
+   }
+
+   // is there an Incredimail 2 database, i.e. containers.db 
+   strcpy( temp_path, directory_search );
+   strcat( temp_path, "\\*.db");
+   hFind = FindFirstFile(temp_path, &FindFileData);
+
+   if( hFind != INVALID_HANDLE_VALUE ) {
+      ret = INCREDIMAIL_2;
+   }
+
+   return ret;
+}
+
+void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_emails ) {
+int rc, del;
+sqlite3 *db;
+sqlite3_stmt *stmt;
+char sql[128], trimmed_filename[128], containerID[128], temp_dir[128], container_path[128];
+const char *tail;
+char *pdest;
+
+*deleted_emails = 0;
+
+   memset( &temp_dir, 0, sizeof(temp_dir) );
+   memset( &container_path, 0, sizeof(container_path) );
+   strcpy( temp_dir, filename );
+   pdest = strrchr( temp_dir, '\\' );
+   strncpy( container_path, temp_dir, strlen( temp_dir ) - strlen( pdest ) );
+   strcat( container_path, "\\Containers.db" );
+
+   rc = sqlite3_open(container_path, &db);
+
+   if( rc ) {
+     // no printf....
+     printf("can't open db\n");
+   } else {
+      // Zero out strings
+      memset( &sql, 0, sizeof(sql) );
+      memset( &trimmed_filename, 0, sizeof(trimmed_filename) );
+      memset( &containerID, 0, sizeof( containerID ) );
+
+      // The filename minus the '.imm'
+      strncpy( trimmed_filename, &pdest[1], strlen(pdest)-5 );
+   
+      sprintf(sql, "SELECT msgscount,containerID FROM CONTAINERS WHERE FILENAME='%s'", trimmed_filename);
+
+      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+
+      // debug***************
+      if( rc == SQLITE_OK ) {
+         printf("OK!\n");
+      }
+      //*********************
+
+      rc = sqlite3_step( stmt );
+
+      // only get the first column and result
+      *email_total = sqlite3_column_int(stmt,0);
+      strcpy(containerID,sqlite3_column_text(stmt,1));
+
+      // reset the sql statement
+      sqlite3_reset( stmt );
+
+      // setup for deleted emails
+      memset( &sql, 0, sizeof(sql) );
+      sprintf(sql, "SELECT Deleted FROM Headers WHERE containerID='%s'", containerID);
+      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+
+      // debug***************
+      if( rc == SQLITE_OK ) {
+         printf("OK!\n");
+      }
+      //*********************
+      rc = sqlite3_step( stmt );
+
+      while( rc == SQLITE_ROW ) {
+         del = sqlite3_column_int(stmt,0);
+         printf("%s\n",sqlite3_column_text(stmt,0));
+         if( del == 1 ) {
+            *deleted_emails++;
+         }
+         rc = sqlite3_step( stmt );
+      }
+      sqlite3_finalize( stmt );
+   }
+   sqlite3_close( db );
+}
+
+
+void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email ) {
+
+sqlite3 *db;
+sqlite3_stmt *stmt;
+char sql[128], trimmed_filename[128], containerID[128], temp_dir[128], container_path[128];
+const char *tail;
+int i, rc;
+char *pdest;
+
+   memset( &temp_dir, 0, sizeof(temp_dir) );
+   memset( &container_path, 0, sizeof(container_path) );
+   strcpy( temp_dir, filename );
+   pdest = strrchr( temp_dir, '\\' );
+   strncpy( container_path, temp_dir, strlen( temp_dir ) - strlen( pdest ) );
+   strcat( container_path, "\\Containers.db" );
+
+   rc = sqlite3_open(container_path, &db);
+
+   if( rc ) {
+     // no printf....
+     // printf("can't open db\n");
+   } else {   
+      // Zero out strings
+      memset( &sql, 0, sizeof(sql) );
+      memset( &trimmed_filename, 0, sizeof(trimmed_filename) );
+      memset( &containerID, 0, sizeof( containerID ) );
+
+      // The filename minus the '.imm'
+      strncpy( trimmed_filename, &pdest[1], strlen(pdest)-5 );
+   
+      sprintf(sql, "SELECT containerID FROM CONTAINERS WHERE FILENAME='%s'", trimmed_filename);
+
+      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+
+      // debug***************
+      if( rc == SQLITE_OK ) {
+         printf("OK!\n");
+      }
+      //*********************
+
+      rc = sqlite3_step( stmt );
+
+      // only get the first column and result
+      strcpy(containerID,sqlite3_column_text(stmt,0));
+
+      // reset the sql statement
+      sqlite3_reset( stmt );
+
+      // setup next query
+      memset( &sql, 0, sizeof(sql) );
+      sprintf(sql, "SELECT MsgPos,LightMsgSize,Deleted FROM Headers WHERE containerID='%s' ORDER BY MsgPos ASC", containerID);
+      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+
+
+      // debug***************
+      if( rc == SQLITE_OK ) {
+         printf("OK!\n");
+      }
+      //*********************
+      rc = sqlite3_step( stmt );
+      email_index--;  // the index has to be decremented for the correct index in the sqlite db
+
+      // Loop though the index
+      for(i = 0; i <= email_index; i++ ) {
+         rc = sqlite3_step( stmt );
+      }
+
+      // I love sqlite conversions
+      *file_offset   = sqlite3_column_int(stmt,0);
+      *size          = sqlite3_column_int(stmt,1);
+      *deleted_email = sqlite3_column_int(stmt,2);
+
+      sqlite3_finalize( stmt );
+   }
+   sqlite3_close( db );   
 }
