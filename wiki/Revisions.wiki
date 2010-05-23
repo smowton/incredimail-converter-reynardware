@@ -1,5 +1,8 @@
 #labels Featured
-==== v0.5 2010-05-20 _Featured Version_ === 
+==== v0.51 2010-05-23 _Featured Version_ === 
+   * Corrected (Issue #8) and (Issue #9) which was the parsing of the export directory structure.
+
+==== v0.5 2010-05-20 === 
    * Added the ability to convert Incredimail 2 database files
    * Updated Users Manual (of course)
    * Corrected Issue #5 – Changed the converter to be statically complied
