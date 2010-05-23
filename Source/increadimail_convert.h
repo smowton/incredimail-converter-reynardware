@@ -23,6 +23,11 @@
 #define S_LEN 1024*2
 #define MAX_CHAR 256
 
+typedef enum INCREDIMAIL_VERSIONS {
+   INCREDIMAIL_XE,
+   INCREDIMAIL_2,
+};
+
 void email_count( char *, int *, int * );
 //***************************************************************************
 // INPUTS:
@@ -108,6 +113,42 @@ int ReadOneLine( HANDLE infile, char *buffer, int max_line_length );
 //***************************************************************************
 
 int FindDatabaseFiles( char *directory_search, char *temp_file_listing );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+enum INCREDIMAIL_VERSIONS FindIncredimailVersion( char *directory_search );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_emails );
+//***************************************************************************
+// INPUTS:
+//
+// OUTPUTS:
+//
+// RETURN VALUE:
+//
+// DESCRIPTION:
+//
+//***************************************************************************
+
+void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email );
 //***************************************************************************
 // INPUTS:
 //
