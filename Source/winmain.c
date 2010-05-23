@@ -440,7 +440,10 @@ enum INCREDIMAIL_VERSION incredimail_version;
             extract_eml_files( im_database_filename, temp_filename, offset, size );
 
             ZeroMemory( export_directory, sizeof( export_directory ) );
-            strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
+            strcpy_s( export_directory, MAX_CHAR, im_database_filename);
+            pdest = strrchr( export_directory, '.' );                  
+            export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+            
             strcat_s( export_directory, MAX_CHAR, "\\" );
             strcat_s( export_directory, MAX_CHAR, new_eml_filename );
             insert_attachments( temp_filename, im_attachments_directory, export_directory );
@@ -547,7 +550,10 @@ enum INCREDIMAIL_VERSION incredimail_version;
             }
 
             // the export directory is based off of the database name
-            strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
+            strcpy_s( export_directory, MAX_CHAR, im_database_filename );
+            pdest = strrchr( export_directory, '.' );
+            export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+
             DeleteDirectory( export_directory );
             CreateDirectory( export_directory, NULL );
             strcat_s( export_directory, MAX_CHAR, "\\" );
@@ -604,7 +610,10 @@ enum INCREDIMAIL_VERSION incredimail_version;
                   extract_eml_files( im_database_filename, temp_filename, offset, size );
 
                   ZeroMemory( export_directory, sizeof( export_directory ) );
-                  strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
+                  strcpy_s( export_directory, MAX_CHAR, im_database_filename);
+                  pdest = strrchr( export_directory, '.' );                  
+                  export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+
                   strcat_s( export_directory, MAX_CHAR, "\\" );
                   strcat_s( export_directory, MAX_CHAR, new_eml_filename );
                   insert_attachments( temp_filename, im_attachments_directory, export_directory );
