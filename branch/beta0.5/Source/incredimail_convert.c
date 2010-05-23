@@ -376,8 +376,9 @@ sqlite3_stmt *stmt;
 char sql[128], trimmed_filename[128], containerID[128], temp_dir[128], container_path[128];
 const char *tail;
 char *pdest;
+int deleted;
 
-*deleted_emails = 0;
+   deleted = 0;
 
    memset( &temp_dir, 0, sizeof(temp_dir) );
    memset( &container_path, 0, sizeof(container_path) );
@@ -398,7 +399,9 @@ char *pdest;
       memset( &containerID, 0, sizeof( containerID ) );
 
       // The filename minus the '.imm'
-      strncpy( trimmed_filename, &pdest[1], strlen(pdest)-5 );
+      strncpy( trimmed_filename, &pdest[1], strlen(pdest) );
+      pdest = strrchr( trimmed_filename, '.' );
+      trimmed_filename[strlen(trimmed_filename) - strlen(pdest)] = '\0';
    
       sprintf(sql, "SELECT msgscount,containerID FROM CONTAINERS WHERE FILENAME='%s'", trimmed_filename);
 
@@ -435,12 +438,16 @@ char *pdest;
          del = sqlite3_column_int(stmt,0);
          printf("%s\n",sqlite3_column_text(stmt,0));
          if( del == 1 ) {
-            *deleted_emails++;
+            deleted++;
          }
          rc = sqlite3_step( stmt );
       }
       sqlite3_finalize( stmt );
    }
+
+   // Incredimail 2 email total doesn't count delete emails
+   *deleted_emails = deleted;
+   *email_total += deleted;
    sqlite3_close( db );
 }
 
@@ -473,8 +480,10 @@ char *pdest;
       memset( &containerID, 0, sizeof( containerID ) );
 
       // The filename minus the '.imm'
-      strncpy( trimmed_filename, &pdest[1], strlen(pdest)-5 );
-   
+      strncpy( trimmed_filename, &pdest[1], strlen(pdest) );
+      pdest = strrchr( trimmed_filename, '.' );
+      trimmed_filename[strlen(trimmed_filename) - strlen(pdest)] = '\0';
+
       sprintf(sql, "SELECT containerID FROM CONTAINERS WHERE FILENAME='%s'", trimmed_filename);
 
       rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
