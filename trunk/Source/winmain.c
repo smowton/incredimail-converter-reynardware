@@ -110,6 +110,11 @@ DWORD                dwThreadId;
 DWORD                ExitCode;
 static DWORD         export_directory;
 
+TCHAR tbuffer[256];
+int tint = 256;
+WIN32_FIND_DATA FindFileData;
+HANDLE hFind;
+
    // Always Initialize Memory
    ZeroMemory( &file_title, sizeof( file_title ) );
    ZeroMemory( &im_database_filename, sizeof( im_database_filename ) );
@@ -136,7 +141,7 @@ static DWORD         export_directory;
 
    switch( message ) {
       case WM_INITDIALOG:          
-         // Setup progress bar
+         // Setup progress bars
          ZeroMemory( &cc, sizeof( cc ) );
          cc.dwSize = sizeof( INITCOMMONCONTROLSEX );
          cc.dwICC  = ICC_PROGRESS_CLASS;
@@ -144,10 +149,35 @@ static DWORD         export_directory;
 
          //Default for buttons
          //SendDlgItemMessage( hdwnd, IDC_CHECK1, BM_SETCHECK, (WPARAM) BST_CHECKED, 0);
-         SendDlgItemMessage( hdwnd, IDC_EXPORT_FILE, BM_SETCHECK, (WPARAM) BST_CHECKED, 0);
+         //SendDlgItemMessage( hdwnd, IDC_EXPORT_FILE, BM_SETCHECK, (WPARAM) BST_CHECKED, 0);
+         SendDlgItemMessage( hdwnd, IDC_EXPORT_DIRECTORY, BM_SETCHECK, (WPARAM) BST_CHECKED, 0);
          
          // set this up for a second thread
-         global_hwnd = hdwnd;  
+         global_hwnd = hdwnd;
+
+         // ok, this is should be easy
+         // automatic search of IM database directory
+         ZeroMemory( tbuffer, 256 );
+         GetUserName( tbuffer, &tint );
+         sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Document and Settings\\%s\\LocalSettings\\Application Data\\IM\\Identities\\*", tbuffer );
+         hFind = FindFirstFile(im_header_filename, &FindFileData);  // should be .
+         if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, ".") == 0 ) {
+            FindNextFile( hFind, &FindFileData );  // should be ..
+            if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, "..") == 0 ) {
+               FindNextFile( hFind, &FindFileData );  // should be the real and only directory...
+               if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY ) {
+                  sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Document and Settings\\%s\\LocalSettings\\Application Data\\IM\\Identities\\%s\\Message Store", tbuffer, FindFileData.cFileName );
+                  if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                     SetDlgItemText( hdwnd, IDC_EDIT1, im_header_filename );
+                  } 
+                  // insert automatic attachment directory here
+                  strcat_s( im_header_filename, MAX_CHAR, "\\Attachments");
+                  if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                     SetDlgItemText( hdwnd, IDC_EDIT2, im_header_filename );         
+                  }
+               }
+            }
+         }
       return 1;
 
       case WM_TIMER:
@@ -231,9 +261,15 @@ static DWORD         export_directory;
                      SetDlgItemText( hdwnd, IDC_ECOUNT, debug_str );
                      sprintf_s( debug_str, MAX_CHAR, "Deleted Emails: %d", d_count );
                      SetDlgItemText( hdwnd, IDC_STATIC8, debug_str );
-                     sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_header_filename );
+                     sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_database_filename );
                      SetDlgItemText( hdwnd, IDC_DATABASE_NAME, debug_str );
                   }
+               }
+
+               // insert automatic attachment directory here
+               strcat_s( im_header_filename, MAX_CHAR, "Attachments");
+               if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                  SetDlgItemText( hdwnd, IDC_EDIT2, im_header_filename );         
                }
                return 1;
 
