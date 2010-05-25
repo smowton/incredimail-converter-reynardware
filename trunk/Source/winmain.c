@@ -159,14 +159,14 @@ HANDLE hFind;
          // automatic search of IM database directory
          ZeroMemory( tbuffer, 256 );
          GetUserName( tbuffer, &tint );
-         sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Document and Settings\\%s\\LocalSettings\\Application Data\\IM\\Identities\\*", tbuffer );
+         sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Documents and Settings\\%s\\Local Settings\\Application Data\\IM\\Identities\\*", tbuffer );
          hFind = FindFirstFile(im_header_filename, &FindFileData);  // should be .
          if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, ".") == 0 ) {
             FindNextFile( hFind, &FindFileData );  // should be ..
             if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, "..") == 0 ) {
                FindNextFile( hFind, &FindFileData );  // should be the real and only directory...
                if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY ) {
-                  sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Document and Settings\\%s\\LocalSettings\\Application Data\\IM\\Identities\\%s\\Message Store", tbuffer, FindFileData.cFileName );
+                  sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Documents and Settings\\%s\\Local Settings\\Application Data\\IM\\Identities\\%s\\Message Store", tbuffer, FindFileData.cFileName );
                   if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
                      SetDlgItemText( hdwnd, IDC_EDIT1, im_header_filename );
                   } 
@@ -581,8 +581,6 @@ enum INCREDIMAIL_VERSION incredimail_version;
                im_database_filename[strlen(im_database_filename)-2] = 0;
                strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
                strcat_s( im_header_filename, MAX_CHAR, "imh" );
-            } else {
-            
             }
 
             // the export directory is based off of the database name
