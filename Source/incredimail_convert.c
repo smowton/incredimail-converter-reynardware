@@ -373,15 +373,15 @@ void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_e
 int rc, del;
 sqlite3 *db;
 sqlite3_stmt *stmt;
-char sql[128], trimmed_filename[128], containerID[128], temp_dir[128], container_path[128];
+char sql[MAX_CHAR], trimmed_filename[MAX_CHAR], containerID[MAX_CHAR], temp_dir[MAX_CHAR], container_path[MAX_CHAR];
 const char *tail;
 char *pdest;
 int deleted;
 
    deleted = 0;
 
-   memset( &temp_dir, 0, sizeof(temp_dir) );
-   memset( &container_path, 0, sizeof(container_path) );
+   memset( temp_dir, 0, sizeof(temp_dir) );
+   memset( container_path, 0, sizeof(container_path) );
    strcpy( temp_dir, filename );
    pdest = strrchr( temp_dir, '\\' );
    strncpy( container_path, temp_dir, strlen( temp_dir ) - strlen( pdest ) );
@@ -394,9 +394,9 @@ int deleted;
      printf("can't open db\n");
    } else {
       // Zero out strings
-      memset( &sql, 0, sizeof(sql) );
-      memset( &trimmed_filename, 0, sizeof(trimmed_filename) );
-      memset( &containerID, 0, sizeof( containerID ) );
+      memset( sql, 0, sizeof(sql) );
+      memset( trimmed_filename, 0, sizeof(trimmed_filename) );
+      memset( containerID, 0, sizeof( containerID ) );
 
       // The filename minus the '.imm'
       strncpy( trimmed_filename, &pdest[1], strlen(pdest) );
@@ -456,13 +456,13 @@ void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file
 
 sqlite3 *db;
 sqlite3_stmt *stmt;
-char sql[128], trimmed_filename[128], containerID[128], temp_dir[128], container_path[128];
+char sql[128], trimmed_filename[MAX_CHAR], containerID[MAX_CHAR], temp_dir[MAX_CHAR], container_path[MAX_CHAR];
 const char *tail;
 int i, rc;
 char *pdest;
 
-   memset( &temp_dir, 0, sizeof(temp_dir) );
-   memset( &container_path, 0, sizeof(container_path) );
+   memset( temp_dir, 0, sizeof(temp_dir) );
+   memset( container_path, 0, sizeof(container_path) );
    strcpy( temp_dir, filename );
    pdest = strrchr( temp_dir, '\\' );
    strncpy( container_path, temp_dir, strlen( temp_dir ) - strlen( pdest ) );
@@ -475,9 +475,9 @@ char *pdest;
      // printf("can't open db\n");
    } else {   
       // Zero out strings
-      memset( &sql, 0, sizeof(sql) );
-      memset( &trimmed_filename, 0, sizeof(trimmed_filename) );
-      memset( &containerID, 0, sizeof( containerID ) );
+      memset( sql, 0, sizeof(sql) );
+      memset( trimmed_filename, 0, sizeof(trimmed_filename) );
+      memset( containerID, 0, sizeof( containerID ) );
 
       // The filename minus the '.imm'
       strncpy( trimmed_filename, &pdest[1], strlen(pdest) );
