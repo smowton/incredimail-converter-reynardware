@@ -221,6 +221,11 @@ HANDLE hFind;
                   SHGetPathFromIDList( idlist, im_database_filename );
                   SetDlgItemText( hdwnd, IDC_EDIT1, im_database_filename );
 
+                  // insert automatic attachment directory here
+                  strcat_s( im_database_filename, MAX_CHAR, "\\Attachments");
+                  if( GetFileAttributes( im_database_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                     SetDlgItemText( hdwnd, IDC_EDIT2, im_database_filename );         
+                  }
                } else {
                   ZeroMemory( &window_title, sizeof( window_title ) );
                   ZeroMemory( &openfile, sizeof( openfile ) );
@@ -263,13 +268,13 @@ HANDLE hFind;
                      SetDlgItemText( hdwnd, IDC_STATIC8, debug_str );
                      sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_database_filename );
                      SetDlgItemText( hdwnd, IDC_DATABASE_NAME, debug_str );
-                  }
-               }
 
-               // insert automatic attachment directory here
-               strcat_s( im_header_filename, MAX_CHAR, "Attachments");
-               if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
-                  SetDlgItemText( hdwnd, IDC_EDIT2, im_header_filename );         
+                     // insert automatic attachment directory here
+                     strncpy_s( im_database_filename, MAX_CHAR, openfile.lpstrFile, strlen(openfile.lpstrFile)-strlen(openfile.lpstrFileTitle) );
+                     if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                        SetDlgItemText( hdwnd, IDC_EDIT2, im_header_filename );         
+                     }
+                  }
                }
                return 1;
 
