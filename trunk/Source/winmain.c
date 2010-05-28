@@ -566,6 +566,9 @@ enum INCREDIMAIL_VERSION incredimail_version;
       do {
          ZeroMemory( &im_database_filename, sizeof( im_database_filename ) );
          read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
+         // cleaning up the line feeds from FindDatabaseFiles function
+         i = strlen( im_database_filename );
+         im_database_filename[i-2] = '\0';
 
          if( read_length != 0 ) {
             SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_STEPIT, 0, 0 );                 // set the overall progress bar
@@ -583,9 +586,9 @@ enum INCREDIMAIL_VERSION incredimail_version;
 
             if( incredimail_version == INCREDIMAIL_XE ) {
                // get the header filename
-               im_database_filename[strlen(im_database_filename)-2] = 0;
-               strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
-               strcat_s( im_header_filename, MAX_CHAR, "imh" );
+               im_database_filename[strlen(im_database_filename)-4] = 0;
+               strcpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) );
+               strcat_s( im_header_filename, MAX_CHAR, ".imh" );
             }
 
             // the export directory is based off of the database name
@@ -618,7 +621,11 @@ enum INCREDIMAIL_VERSION incredimail_version;
             sprintf_s( debug_str, MAX_CHAR, "Deleted Emails: %d", d_count );
             SetDlgItemText( global_hwnd, IDC_STATIC8, debug_str );
 
-            sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_database_filename );
+            sprintf_s( debug_str, MAX_CHAR, "Database: %s", im_database_filename );
+            pdest = strrchr( debug_str, '\\' );
+            sprintf_s( debug_str, MAX_CHAR, "Database: %s", &pdest[1] );
+
+            
             SetDlgItemText( global_hwnd, IDC_DATABASE_NAME, debug_str );
 
             // get the state of the checkbox
