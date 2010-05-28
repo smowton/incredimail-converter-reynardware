@@ -567,7 +567,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
          ZeroMemory( &im_database_filename, sizeof( im_database_filename ) );
          read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
          // cleaning up the line feeds from FindDatabaseFiles function
-         i = strlen( im_database_filename );
+         i = (int) strlen( im_database_filename );
          im_database_filename[i-2] = '\0';
 
          if( read_length != 0 ) {
@@ -587,7 +587,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
             if( incredimail_version == INCREDIMAIL_XE ) {
                // get the header filename
                im_database_filename[strlen(im_database_filename)-4] = 0;
-               strcpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) );
+               strcpy_s( im_header_filename, MAX_CHAR, im_database_filename );
                strcat_s( im_header_filename, MAX_CHAR, ".imh" );
             }
 
