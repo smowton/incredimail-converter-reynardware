@@ -1,5 +1,5 @@
 #labels Featured
-==== v0.52 2010-05-26 _Featured Version_ ====
+==== v0.52 2010-05-29 _Featured Version_ ====
   * Corrected (Issue #10)
   * Upon startup the converter searches for the Incredimail database directory.  It also tries to find the attachment directory if the user selects the directory or database file.
   * Updated Users Manual to include the automatic searching capabilities.
