@@ -370,13 +370,17 @@ HANDLE hFind;
 }
 
 void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_emails ) {
-int rc, del;
-sqlite3 *db;
-sqlite3_stmt *stmt;
-char sql[MAX_CHAR], trimmed_filename[MAX_CHAR], containerID[MAX_CHAR], temp_dir[MAX_CHAR], container_path[MAX_CHAR];
+char sql[MAX_CHAR];
+char trimmed_filename[MAX_CHAR];
+char containerID[MAX_CHAR];
+char temp_dir[MAX_CHAR];
+char container_path[MAX_CHAR];
+
 const char *tail;
 char *pdest;
-int deleted;
+int rc, del, deleted;
+sqlite3 *db;
+sqlite3_stmt *stmt;
 
    deleted = 0;
 
@@ -456,7 +460,11 @@ void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file
 
 sqlite3 *db;
 sqlite3_stmt *stmt;
-char sql[128], trimmed_filename[MAX_CHAR], containerID[MAX_CHAR], temp_dir[MAX_CHAR], container_path[MAX_CHAR];
+char sql[MAX_CHAR];
+char trimmed_filename[MAX_CHAR];
+char containerID[MAX_CHAR];
+char temp_dir[MAX_CHAR];
+char container_path[MAX_CHAR];
 const char *tail;
 int i, rc;
 char *pdest;
@@ -490,7 +498,7 @@ char *pdest;
 
       // debug***************
       if( rc == SQLITE_OK ) {
-         printf("OK!\n");
+         // printf("OK!\n");
       }
       //*********************
 

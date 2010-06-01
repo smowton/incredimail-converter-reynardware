@@ -155,6 +155,14 @@ HANDLE hFind;
          // set this up for a second thread
          global_hwnd = hdwnd;
 
+         // show stuff for the second progress bar
+         control = GetDlgItem( global_hwnd, IDC_PROGRESS2 );
+         ShowWindow( control, SW_SHOW );
+         control = GetDlgItem( global_hwnd, IDC_OVERALL_PROGRESS );
+         ShowWindow( control, SW_SHOW );
+         control = GetDlgItem( global_hwnd, IDC_OVERALL_PERCENT );
+         ShowWindow( control, SW_SHOW );
+
          // ok, this is should be easy
          // automatic search of IM database directory
          ZeroMemory( tbuffer, 256 );
@@ -606,13 +614,9 @@ enum INCREDIMAIL_VERSION incredimail_version;
 
             if( incredimail_version == INCREDIMAIL_XE ) {
                email_count( im_header_filename, &e_count, &d_count );
-            } else {
-               Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
-            }
-
-            if( incredimail_version == INCREDIMAIL_XE ) {
                SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: Incredimail XE" );
             } else {
+               Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
                SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: Incredimail 2" );
             }
 
@@ -624,8 +628,6 @@ enum INCREDIMAIL_VERSION incredimail_version;
             sprintf_s( debug_str, MAX_CHAR, "Database: %s", im_database_filename );
             pdest = strrchr( debug_str, '\\' );
             sprintf_s( debug_str, MAX_CHAR, "Database: %s", &pdest[1] );
-
-            
             SetDlgItemText( global_hwnd, IDC_DATABASE_NAME, debug_str );
 
             // get the state of the checkbox
@@ -665,6 +667,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
                   insert_attachments( temp_filename, im_attachments_directory, export_directory );
                   DeleteFile( temp_filename );
                }
+               
                // update the progress
                percent_complete =  ( ( (float) (i+1)/ (float) e_count) ) * 100;
                sprintf_s( debug_str, MAX_CHAR, "%d of %d (%0.0f%%)", i+1 ,e_count, percent_complete );
@@ -675,6 +678,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
             }
          }
       } while( read_length != 0 );
+      CloseHandle( inputfile );
    }  
    email_thread = THREAD_COMPLETED;
 }
