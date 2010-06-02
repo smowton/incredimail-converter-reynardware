@@ -280,8 +280,9 @@ HANDLE hFind;
 
                      // insert automatic attachment directory here
                      strncpy_s( im_database_filename, MAX_CHAR, openfile.lpstrFile, strlen(openfile.lpstrFile)-strlen(openfile.lpstrFileTitle) );
+                     strcat_s( im_database_filename, MAX_CHAR, "Attachments");
                      if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
-                        SetDlgItemText( hdwnd, IDC_EDIT2, im_header_filename );         
+                        SetDlgItemText( hdwnd, IDC_EDIT2, im_database_filename );         
                      }
                   }
                }
