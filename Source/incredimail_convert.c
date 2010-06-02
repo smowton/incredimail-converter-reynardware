@@ -352,6 +352,7 @@ HANDLE hFind;
    strcpy( temp_path, directory_search );
    strcat( temp_path, "\\*.imh");
    hFind = FindFirstFile(temp_path, &FindFileData);
+   FindClose( hFind );
 
    if( hFind != INVALID_HANDLE_VALUE ) {
       ret = INCREDIMAIL_XE;
@@ -365,6 +366,7 @@ HANDLE hFind;
    if( hFind != INVALID_HANDLE_VALUE ) {
       ret = INCREDIMAIL_2;
    }
+   FindClose( hFind );
 
    return ret;
 }
@@ -409,7 +411,7 @@ sqlite3_stmt *stmt;
    
       sprintf(sql, "SELECT msgscount,containerID FROM CONTAINERS WHERE FILENAME='%s'", trimmed_filename);
 
-      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+      rc = sqlite3_prepare_v2( db, sql, (int) strlen( sql ), &stmt, &tail );
 
       // debug***************
       if( rc == SQLITE_OK ) {
@@ -425,11 +427,14 @@ sqlite3_stmt *stmt;
 
       // reset the sql statement
       sqlite3_reset( stmt );
+      sqlite3_finalize( stmt );
+      sqlite3_close( db );
 
       // setup for deleted emails
+      rc = sqlite3_open(container_path, &db);
       memset( &sql, 0, sizeof(sql) );
       sprintf(sql, "SELECT Deleted FROM Headers WHERE containerID='%s'", containerID);
-      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+      rc = sqlite3_prepare_v2( db, sql, (int) strlen( sql ), &stmt, &tail );
 
       // debug***************
       if( rc == SQLITE_OK ) {
@@ -446,6 +451,7 @@ sqlite3_stmt *stmt;
          }
          rc = sqlite3_step( stmt );
       }
+      sqlite3_reset( stmt );
       sqlite3_finalize( stmt );
    }
 
@@ -494,11 +500,11 @@ char *pdest;
 
       sprintf(sql, "SELECT containerID FROM CONTAINERS WHERE FILENAME='%s'", trimmed_filename);
 
-      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+      rc = sqlite3_prepare_v2( db, sql, (int) strlen( sql ), &stmt, &tail );
 
       // debug***************
       if( rc == SQLITE_OK ) {
-         // printf("OK!\n");
+          printf("OK!\n");
       }
       //*********************
 
@@ -509,17 +515,20 @@ char *pdest;
 
       // reset the sql statement
       sqlite3_reset( stmt );
+      sqlite3_finalize( stmt );
+      sqlite3_close( db );   
 
       // setup next query
+      rc = sqlite3_open(container_path, &db);
       memset( &sql, 0, sizeof(sql) );
       sprintf(sql, "SELECT MsgPos,LightMsgSize,Deleted FROM Headers WHERE containerID='%s' ORDER BY MsgPos ASC", containerID);
-      rc = sqlite3_prepare( db, sql, (int) strlen( sql ), &stmt, &tail );
+      rc = sqlite3_prepare_v2( db, sql, (int) strlen( sql ), &stmt, &tail );
 
 
       // debug***************
-      if( rc == SQLITE_OK ) {
-         printf("OK!\n");
-      }
+      //if( rc == SQLITE_OK ) {
+      //   printf("OK!\n");
+      //}
       //*********************
       rc = sqlite3_step( stmt );
       email_index--;  // the index has to be decremented for the correct index in the sqlite db
@@ -534,6 +543,7 @@ char *pdest;
       *size          = sqlite3_column_int(stmt,1);
       *deleted_email = sqlite3_column_int(stmt,2);
 
+      sqlite3_reset( stmt );
       sqlite3_finalize( stmt );
    }
    sqlite3_close( db );   

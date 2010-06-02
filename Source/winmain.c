@@ -186,6 +186,7 @@ HANDLE hFind;
                }
             }
          }
+         FindClose( hFind );
       return 1;
 
       case WM_TIMER:
@@ -542,10 +543,12 @@ char *pdest;
 enum INCREDIMAIL_VERSION incredimail_version;
 
    // Zero out the string names
-   ZeroMemory( &temp_file_listing, sizeof( temp_file_listing ) );
-   ZeroMemory( &im_attachments_directory, sizeof( im_attachments_directory ) );
-   ZeroMemory( &im_header_filename, sizeof( im_header_filename ) );
-   ZeroMemory( &export_directory, sizeof( export_directory ) );
+   ZeroMemory( temp_file_listing, sizeof( temp_file_listing ) );
+   ZeroMemory( im_attachments_directory, sizeof( im_attachments_directory ) );
+   ZeroMemory( im_header_filename, sizeof( im_header_filename ) );
+   ZeroMemory( im_database_filename, sizeof( im_database_filename ) );
+   ZeroMemory( export_directory, sizeof( export_directory ) );
+   ZeroMemory( temp_path, sizeof( temp_path ) );
    j = 0;
 
    GetDlgItemText( global_hwnd, IDC_EDIT1, im_database_filename, 256 );       // get the incredimail database name
@@ -572,11 +575,10 @@ enum INCREDIMAIL_VERSION incredimail_version;
       inputfile  = CreateFile(temp_file_listing, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
       do {
-         ZeroMemory( &im_database_filename, sizeof( im_database_filename ) );
          read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
          // cleaning up the line feeds from FindDatabaseFiles function
          i = (int) strlen( im_database_filename );
-         im_database_filename[i-2] = '\0';
+         im_database_filename[i-2] = 0;
 
          if( read_length != 0 ) {
             SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_STEPIT, 0, 0 );                 // set the overall progress bar
@@ -589,20 +591,21 @@ enum INCREDIMAIL_VERSION incredimail_version;
 
             // get incredimail version
             pdest = strrchr( im_database_filename, '\\' );
-            strncpy_s( temp_path, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
+            strncpy_s( temp_path, sizeof(temp_path), im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
             incredimail_version = FindIncredimailVersion( temp_path );
 
             if( incredimail_version == INCREDIMAIL_XE ) {
                // get the header filename
-               im_database_filename[strlen(im_database_filename)-4] = 0;
-               strcpy_s( im_header_filename, MAX_CHAR, im_database_filename );
+               strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen(im_database_filename) - 4 );
                strcat_s( im_header_filename, MAX_CHAR, ".imh" );
             }
 
             // the export directory is based off of the database name
             strcpy_s( export_directory, MAX_CHAR, im_database_filename );
             pdest = strrchr( export_directory, '.' );
-            export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+            if( pdest != 0 ) {
+               export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+            }
 
             DeleteDirectory( export_directory );
             CreateDirectory( export_directory, NULL );
@@ -659,8 +662,10 @@ enum INCREDIMAIL_VERSION incredimail_version;
 
                   ZeroMemory( export_directory, sizeof( export_directory ) );
                   strcpy_s( export_directory, MAX_CHAR, im_database_filename);
-                  pdest = strrchr( export_directory, '.' );                  
-                  export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+                  pdest = strrchr( export_directory, '.' );
+                  if( pdest != 0 ) {
+                     export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+                  }
 
                   strcat_s( export_directory, MAX_CHAR, "\\" );
                   strcat_s( export_directory, MAX_CHAR, new_eml_filename );
