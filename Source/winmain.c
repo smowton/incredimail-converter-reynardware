@@ -575,6 +575,7 @@ enum INCREDIMAIL_VERSION incredimail_version;
       inputfile  = CreateFile(temp_file_listing, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
       do {
+         ZeroMemory( im_database_filename, sizeof( im_database_filename ) );
          read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
          // cleaning up the line feeds from FindDatabaseFiles function
          i = (int) strlen( im_database_filename );
