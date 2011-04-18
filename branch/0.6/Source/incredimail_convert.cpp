@@ -143,7 +143,7 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString atta
     QByteArray ATTACHMENT("----------[%ImFilePath%]----------");
     QString attachment_name;
     QFile old_eml_file, new_eml_file, attach;
-    QByteArray extract;
+    QByteArray extract, extract64;
 
     old_eml_file.setFileName(eml_filename);
     new_eml_file.setFileName(final_email_filename);
@@ -157,14 +157,15 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString atta
            if(extract.contains(ATTACHMENT)) {
                attachment_name = attachments_path;
                attachment_name.append("/").append(extract.right(extract.size()-34));
-               attachment_name.chop(2);
+               attachment_name = attachment_name.simplified();
 
                // then base64
                attach.setFileName(attachment_name);
                attach.open(QIODevice::ReadOnly);
                while(!attach.atEnd()) {
-                   extract = attach.read(64);
-                   new_eml_file.write(extract.toBase64(), 64);
+                   extract64 = attach.read(54);  // why 54?  Because...this converts to 72 chars per line
+                   new_eml_file.write(extract64.toBase64().append("\n"));
+                   new_eml_file.flush();  // do I need to flush it?
                }
                attach.close();
            } else {
