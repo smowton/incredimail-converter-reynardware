@@ -70,8 +70,8 @@ QFileDialog FileDialog;
 void Dialog::on_Convert_pressed()
 {
 Incredimail_Convert ic;
-QString sql, imm_db;
-QString eml;
+QString sql, imm_db, attachment;
+QString eml, attachment_eml;
 QFileInfo db;
 int email, deleted = 0;
 int file_offset, size, deleted_email = 0;
@@ -81,6 +81,8 @@ int i = 0;
    imm_db = ui->lineEdit->text();
    sql = db.path();
    sql.append("/Containers.db");
+   attachment = db.path();
+   attachment.append("/Attachments");
 
    ic.Set_Database_File(imm_db);
    ic.Set_SQLite_File(sql);
@@ -92,7 +94,8 @@ int i = 0;
       ic.Incredimail_2_Get_Email_Offset_and_Size( file_offset, size, i, deleted_email );
       qDebug() << "File Offset" << file_offset << "Size" << size << "Deleted email" << deleted_email;
       eml = QString("EML_File_%1.eml").arg(i);
+      attachment_eml = QString("Final_EML_File_%1.eml").arg(i);
       ic.Extract_EML_File(eml, file_offset, size);
+      ic.Insert_Attachments(eml, attachment, attachment_eml);
    }
-
 }

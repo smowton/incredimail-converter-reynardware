@@ -140,67 +140,38 @@ const int kbytes = 1024;
 
 void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString attachments_path, QString final_email_filename ) {
 
-/*
-HANDLE inputfile, outputfile, encoded_file;
-HANDLE encode64_input_file, encode64_output_file;
+    QByteArray ATTACHMENT("----------[%ImFilePath%]----------");
+    QString attachment_name;
+    QFile old_eml_file, new_eml_file, attach;
+    QByteArray extract;
 
-DWORD byteswritten;
-char string_1[512], string_2[512];
-char attachment_name[512];
-int attachment_length, read_length, read_encoded_length;
+    old_eml_file.setFileName(eml_filename);
+    new_eml_file.setFileName(final_email_filename);
+    new_eml_file.open(QIODevice::WriteOnly);
 
-char temp_path[MAX_CHAR];
-char temp_filename[MAX_CHAR];
+    if( old_eml_file.exists() && new_eml_file.isOpen() ) {
+        old_eml_file.open(QIODevice::ReadOnly);
 
+        while( !old_eml_file.atEnd() ) {
+           extract = old_eml_file.readLine();
+           if(extract.contains(ATTACHMENT)) {
+               attachment_name = attachments_path;
+               attachment_name.append("/").append(extract.right(extract.size()-34));
+               attachment_name.chop(2);
 
-   inputfile  = CreateFile(eml_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-   outputfile = CreateFile(final_email_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-   read_length = 1;
-
-   GetTempPath( sizeof( temp_path ), temp_path );
-
-   if( inputfile && outputfile ) {
-      while( read_length != 0 ) {
-         memset( string_1, 0, MAX_CHAR );
-         read_length = ReadOneLine( inputfile, string_1, MAX_CHAR );
-
-         // search for the ATTACHMENT string
-         if( strncmp( ATTACHMENT,  string_1, 34 ) == 0 ) {
-            // fix the attachment string
-            attachment_length = (int) strlen(string_1);
-            strcpy( attachment_name, attachments_path );
-            strcat( attachment_name, "\\" );
-            strncat( attachment_name, &string_1[34], attachment_length - 36 );
-
-            // encode the attachement
-            GetTempFileName( temp_path, "att", 0, temp_filename );
-            encode64_input_file  = CreateFile(attachment_name, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-            encode64_output_file = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY, NULL );
-            if( encode64_input_file && encode64_output_file  ) {
-               encode( encode64_input_file, encode64_output_file, 72 );
-               CloseHandle( encode64_input_file );
-               CloseHandle( encode64_output_file );
-
-               encoded_file = CreateFile(temp_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-               if( encoded_file ) {
-                  read_encoded_length = 1;
-                  while( read_encoded_length ) {
-                     memset( string_2, 0, MAX_CHAR );
-                     read_encoded_length = ReadOneLine( encoded_file, string_2, MAX_CHAR );
-                     if( outputfile ) {
-                        WriteFile( outputfile, string_2, read_encoded_length, &byteswritten, NULL );
-                     }
-                  }
-                  CloseHandle( encoded_file );
-                  DeleteFile( temp_filename );
+               // then base64
+               attach.setFileName(attachment_name);
+               attach.open(QIODevice::ReadOnly);
+               while(!attach.atEnd()) {
+                   extract = attach.read(64);
+                   new_eml_file.write(extract.toBase64(), 64);
                }
-            }
-         } else {
-            WriteFile( outputfile, string_1, read_length, &byteswritten, NULL );
-         }
-      }
-   }
-   CloseHandle( inputfile );
-   CloseHandle( outputfile );
-   */
+               attach.close();
+           } else {
+              new_eml_file.write(extract);
+           }
+        }
+    }
+    new_eml_file.close();
+    old_eml_file.close();
 }
