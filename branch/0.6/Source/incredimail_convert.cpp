@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QSqlRecord>
 #include <QVariant>
+#include <QTemporaryFile>
 
 Incredimail_Convert::Incredimail_Convert()
 {
@@ -138,41 +139,50 @@ const int kbytes = 1024;
 }
 
 
-void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString attachments_path, QString final_email_filename ) {
+void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString attachments_path ) {
 
     QByteArray ATTACHMENT("----------[%ImFilePath%]----------");
-    QString attachment_name;
-    QFile old_eml_file, new_eml_file, attach;
+    QString attachment_name, temp_eml_filename;
+    QFile old_eml_file, temp_eml_file, attach;
     QByteArray extract, extract64;
 
     old_eml_file.setFileName(eml_filename);
-    new_eml_file.setFileName(final_email_filename);
-    new_eml_file.open(QIODevice::WriteOnly);
+    temp_eml_filename = eml_filename;
+    temp_eml_file.setFileName(temp_eml_filename.append(".tmp"));
+    temp_eml_file.open(QIODevice::WriteOnly);
 
-    if( old_eml_file.exists() && new_eml_file.isOpen() ) {
+    if( old_eml_file.exists() && temp_eml_file.isOpen() ) {
         old_eml_file.open(QIODevice::ReadOnly);
 
         while( !old_eml_file.atEnd() ) {
            extract = old_eml_file.readLine();
+           // if the eml contain an attachment then base64 encode it
            if(extract.contains(ATTACHMENT)) {
+               // still need the attachment path (maybe this needs to be a private var)
                attachment_name = attachments_path;
-               attachment_name.append("/").append(extract.right(extract.size()-34));
-               attachment_name = attachment_name.simplified();
+               attachment_name.append("/").append(extract.right(extract.size()-ATTACHMENT.size()));
+               attachment_name = attachment_name.simplified();  // remove the junk
 
                // then base64
                attach.setFileName(attachment_name);
-               attach.open(QIODevice::ReadOnly);
-               while(!attach.atEnd()) {
-                   extract64 = attach.read(54);  // why 54?  Because...this converts to 72 chars per line
-                   new_eml_file.write(extract64.toBase64().append("\n"));
-                   new_eml_file.flush();  // do I need to flush it?
-               }
-               attach.close();
+               if( attach.exists() ) {
+                  attach.open(QIODevice::ReadOnly);
+                  while(!attach.atEnd()) {
+                     // why 54?  I am not 100% sure, but...this converts to 72 chars per line
+                     extract64 = attach.read(54);
+                     temp_eml_file.write(extract64.toBase64().append("\n"));
+                  }
+                  attach.close();
+              } else {
+                 qDebug() << "Error in attachment name:" << attachment_name;
+              }
            } else {
-              new_eml_file.write(extract);
+              temp_eml_file.write(extract);
            }
         }
     }
-    new_eml_file.close();
+    old_eml_file.remove();               // remove then close
     old_eml_file.close();
+    temp_eml_file.rename(eml_filename);  // rename the temp to the final one
+    temp_eml_file.close();               // then close it out
 }
