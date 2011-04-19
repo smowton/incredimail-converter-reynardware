@@ -1,0 +1,86 @@
+#include "incredimail_2.h"
+
+#include <QSqlDatabase>
+#include <QString>
+#include <QSqlQuery>
+#include <QVariant>
+
+Incredimail_2::Incredimail_2()
+{
+}
+
+bool Incredimail_2::Set_SQLite_File(QString Database) {
+
+    sql_db = QSqlDatabase::addDatabase("QSQLITE");
+    sql_db.setDatabaseName(Database);
+
+    return sql_db.open();
+}
+
+
+void Incredimail_2::Close_SQLite_File() {
+    sql_db.close();
+}
+
+void Incredimail_2::Get_Email_Offset_and_Size(int &file_offset, int &size, int email_index, int &deleted_email ) {
+QString prepare;
+QSqlQuery query;
+QString ContainerId;
+
+   if( sql_db.isOpen() && sql_db.isValid() && IM_Database.exists() ) {
+       prepare.clear();
+       prepare = QString("SELECT containerID FROM CONTAINERS WHERE FILENAME='%1'").arg(IM_Database_Info.baseName());
+       query.prepare(prepare);
+       query.exec();
+       query.first();
+       ContainerId =  query.value(0).toString();
+
+       // Set up
+       prepare.clear();
+       prepare = QString("SELECT MsgPos,LightMsgSize,Deleted FROM Headers WHERE containerID='%1' ORDER BY MsgPos ASC").arg(ContainerId);
+       query.exec(prepare);
+       query.first();
+
+       // Loop though the index
+       for(int i = 0; i < email_index; i++ ) {
+          query.next();
+       }
+
+       file_offset   = query.value(0).toInt();
+       size          = query.value(1).toInt();
+       deleted_email = query.value(2).toInt();
+       query.finish();
+   }
+}
+
+
+void Incredimail_2::Email_Count(int &email_total, int &total_deleted ) {
+QString prepare;
+QSqlQuery query;
+QString ContainerId;
+int deleted = 0;
+
+    if( sql_db.isOpen() && sql_db.isValid() && IM_Database.exists() ) {
+        // Setup for Mailbox
+        prepare = QString("SELECT msgscount,containerID FROM CONTAINERS WHERE FILENAME='%1'").arg(IM_Database_Info.baseName());
+        query.prepare(prepare);
+        query.exec();
+        query.first();
+        email_total = query.value(0).toInt();
+        ContainerId = query.value(1).toString();
+
+        // Set up for the deleted emails
+        prepare.clear();
+        prepare = QString("SELECT Deleted FROM Headers WHERE containerID='%1'").arg(ContainerId);
+        query.exec(prepare);
+        query.first();
+        deleted = query.value(0).toInt();
+        while(query.next()) {
+           deleted += query.value(0).toInt();
+        }
+
+        total_deleted = deleted;
+        email_total  += deleted;
+        query.finish();
+    }
+}

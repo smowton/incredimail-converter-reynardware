@@ -3,7 +3,7 @@
 #include "ui_dialog.h"
 #include "ui_about_dialog.h"
 
-#include <incredimail_convert.h>
+#include <incredimail_2.h>
 
 #include <QFileDialog>
 #include <QDir>
@@ -21,7 +21,6 @@ Dialog::Dialog(QWidget *parent) :
     QString HomeDir;
     QStringList dirs_listing;
     QMessageBox msgbox;
-    QFileInfo fileinfo;
 
     ui->radioButton_3->setChecked(true);
 
@@ -32,16 +31,10 @@ Dialog::Dialog(QWidget *parent) :
     if( hd.exists(HomeDir) ) {
         dirs_listing = hd.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::DirsFirst);
         HomeDir.append(dirs_listing.at(0));
-        HomeDir.append("/container.db");
-        fileinfo.setFile( HomeDir );
-        if( !fileinfo.exists() ) {
-           msgbox.setText("Could not find the default database file");
-           msgbox.setInformativeText(HomeDir);
-        } else {
-           ui->lineEdit->setText(HomeDir);
-        }
+        ui->lineEdit->setText(HomeDir);
     } else {
         msgbox.setText("Could not find the default database directory");
+        qDebug() << "Could not find the default database directory";
         msgbox.setInformativeText(HomeDir);
         msgbox.exec();
     }
@@ -69,7 +62,7 @@ QFileDialog FileDialog;
 
 void Dialog::on_Convert_pressed()
 {
-Incredimail_Convert ic;
+Incredimail_2 ic;
 QString sql, imm_db, attachment, eml;
 QFileInfo db;
 int email, deleted = 0;
@@ -85,13 +78,13 @@ int i = 0;
 
    ic.Set_Database_File(imm_db);
    ic.Set_SQLite_File(sql);
-   ic.Incredimail_2_Email_Count(email, deleted);
+   ic.Email_Count(email, deleted);
 
    qDebug() << "Email:" << email << "Deleted:" << deleted;
 
 
    for( i = 0; i < email; i++ ) {
-      ic.Incredimail_2_Get_Email_Offset_and_Size( file_offset, size, i, deleted_email );
+      ic.Get_Email_Offset_and_Size( file_offset, size, i, deleted_email );
       qDebug() << "File Offset" << file_offset << "Size" << size << "Deleted email" << deleted_email;
       eml = QString("EML_File_%1.eml").arg(i);
       ic.Extract_EML_File(eml, file_offset, size);
