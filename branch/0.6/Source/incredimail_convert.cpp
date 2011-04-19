@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QSqlRecord>
 #include <QVariant>
-#include <QTemporaryFile>
 
 Incredimail_Convert::Incredimail_Convert()
 {
@@ -30,8 +29,6 @@ bool Incredimail_Convert::Set_Database_File(QString Database) {
 void Incredimail_Convert::Close_Database_File() {
     IM_Database.close();
 }
-
-
 
 
 void Incredimail_Convert::Extract_EML_File(QString eml_filename, int offset, int size) {

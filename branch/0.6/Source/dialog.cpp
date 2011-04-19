@@ -80,9 +80,6 @@ int i = 0;
    ic.Set_SQLite_File(sql);
    ic.Email_Count(email, deleted);
 
-   qDebug() << "Email:" << email << "Deleted:" << deleted;
-
-
    for( i = 0; i < email; i++ ) {
       ic.Get_Email_Offset_and_Size( file_offset, size, i, deleted_email );
       qDebug() << "File Offset" << file_offset << "Size" << size << "Deleted email" << deleted_email;
