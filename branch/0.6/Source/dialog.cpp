@@ -60,31 +60,41 @@ QFileDialog FileDialog;
     ui->toolButton->setDown(false);
 }
 
+
 void Dialog::on_Convert_pressed()
 {
 Incredimail_2 ic;
 QString sql, imm_db, attachment, eml;
 QFileInfo db;
-int email, deleted = 0;
-int file_offset, size, deleted_email = 0;
-int i = 0;
+QStringList dir_listing;
+int email, deleted, file_offset, size, deleted_email = 0;
 
-   db.setFile(ui->lineEdit->text());
    imm_db = ui->lineEdit->text();
-   sql = db.path();
+   db.setFile(imm_db);
+   ic.Set_Database_Path(db.path());
+   sql = attachment = db.path();
    sql.append("/Containers.db");
-   attachment = db.path();
    attachment.append("/Attachments");
 
-   ic.Set_Database_File(imm_db);
+   ic.Set_Attachments_Directory(attachment);
    ic.Set_SQLite_File(sql);
-   ic.Email_Count(email, deleted);
 
-   for( i = 0; i < email; i++ ) {
-      ic.Get_Email_Offset_and_Size( file_offset, size, i, deleted_email );
-      qDebug() << "File Offset" << file_offset << "Size" << size << "Deleted email" << deleted_email;
-      eml = QString("EML_File_%1.eml").arg(i);
-      ic.Extract_EML_File(eml, file_offset, size);
-      ic.Insert_Attachments(eml, attachment );
+   if(ui->radioButton_3->isChecked()) {
+       dir_listing << imm_db;
+   } else if(ui->radioButton_2->isChecked()) {
+       dir_listing = ic.Setup_IM_Directory_Processing();
+   }
+
+   for( int i = 0; i < dir_listing.size(); i++ ) {
+      ic.Set_Database_File( dir_listing.at(0) );
+      ic.Email_Count(email, deleted);
+      for( int j = 0; j < email; j++ ) {
+          ic.Get_Email_Offset_and_Size( file_offset, size, j, deleted_email );
+          // **** mkdir here ****
+          eml = QString("EML_File_%1.eml").arg(j);
+          ic.Extract_EML_File(eml, file_offset, size);
+          ic.Insert_Attachments(eml);
+      }
+      ic.Close_Database_File();
    }
 }

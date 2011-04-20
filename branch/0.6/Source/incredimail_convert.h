@@ -30,6 +30,14 @@ class Incredimail_Convert
 public:
     Incredimail_Convert();
 
+    void Set_Database_Path(QString Path);
+    //**************************************************************************
+    // Input  : QString - Path of the Incredimail Database files
+    // Output : None
+    // Description: This function sets the protected variable IM_Database_Info
+    //              to be used in other members.
+    //**************************************************************************
+
     bool Set_Database_File(QString Database);
     //**************************************************************************
     // Input  : QString - The name of the *.imm database to extract the eml files
@@ -64,13 +72,10 @@ public:
     //              this class.
     //**************************************************************************
 
-    void Insert_Attachments( QString eml_filename, QString attachments_path );
+    void Insert_Attachments( QString eml_filename );
     //**************************************************************************
     // Input  : QString eml_filename - the eml filename (including path) to have the
     //          the attachments inserted in.
-    //          QString attachment_path - the attachement directory which all the
-    //          Increidmail attachements are located.  (TBD - maybe set this varible
-    //          up in the private section)
     // Output : None
     // Description: This function given a eml file name and attachement path will
     //              insert the attachment if it finds the incredimail "attachement"
@@ -78,10 +83,30 @@ public:
     //              in the eml file.
     //**************************************************************************
 
+    bool Set_Attachments_Directory( QString attachment_path );
+    //**************************************************************************
+    // Input  : QString attachment_path - the attachments path, where the IM keeps
+    //          the Incredimail attachments
+    // Output : bool
+    //              - true  = the attachment_path does exist
+    //              - false = the attachment_path does not exist
+    // Description: This function sets the attachment directory for the members of
+    //              this class.
+    //**************************************************************************
+
+    QStringList Setup_IM_Directory_Processing( );
+    //**************************************************************************
+    // Input  : None
+    // Output : QStringList - returns a listing of all the .imm files in the
+    //          IM_Database_Info variable
+    // Description: This function returns a listing of all the .imm files based
+    //              on the protected variable IM_Database_Info
+    //**************************************************************************
+
 protected:
     QFile IM_Database;          // The imm database file handle
-    QFileInfo IM_Database_Info; // The imm database file information (i.e. path, extension, etc...)
-
+    QFileInfo IM_Database_Info; // The imm database directory
+    QFileInfo IM_Attachment;    // The attachment directory
 };
 
 #endif // INCREDIMAIL_CONVERT_H

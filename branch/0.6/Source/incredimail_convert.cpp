@@ -6,18 +6,23 @@
 #include <QDebug>
 #include <QSqlRecord>
 #include <QVariant>
+#include <QDir>
 
 Incredimail_Convert::Incredimail_Convert()
 {
 // Todo!
 }
 
+void Incredimail_Convert::Set_Database_Path(QString Path) {
+    IM_Database_Info.setFile(Path);
+}
+
+
 bool Incredimail_Convert::Set_Database_File(QString Database) {
 
     bool ret = false;
 
     IM_Database.setFileName(Database);
-    IM_Database_Info.setFile(Database);
     if( IM_Database.exists() ) {
         ret = IM_Database.open(QIODevice::ReadOnly);
     }
@@ -60,7 +65,7 @@ const int kbytes = 1024;
 }
 
 
-void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString attachments_path ) {
+void Incredimail_Convert::Insert_Attachments( QString eml_filename ) {
 
     QByteArray ATTACHMENT("----------[%ImFilePath%]----------");
     QString attachment_name, temp_eml_filename;
@@ -79,8 +84,8 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString atta
            extract = old_eml_file.readLine();
            // if the eml contain an attachment then base64 encode it
            if(extract.contains(ATTACHMENT)) {
-               // still need the attachment path (maybe this needs to be a private var)
-               attachment_name = attachments_path;
+               // still need the attachment
+               attachment_name = IM_Attachment.path();
                attachment_name.append("/").append(extract.right(extract.size()-ATTACHMENT.size()));
                attachment_name = attachment_name.simplified();  // remove the junk
 
@@ -106,4 +111,33 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename, QString atta
     old_eml_file.close();
     temp_eml_file.rename(eml_filename);  // rename the temp to the final one
     temp_eml_file.close();               // then close it out
+}
+
+
+bool Incredimail_Convert::Set_Attachments_Directory( QString attachment_path ) {
+
+    bool set_succussfully = false;
+
+    IM_Attachment.setFile(attachment_path);
+
+    if(IM_Attachment.isDir()) {
+        set_succussfully = true;
+    }
+
+    return set_succussfully;
+}
+
+
+QStringList Incredimail_Convert::Setup_IM_Directory_Processing( ) {
+
+    QStringList filters, file_listing;
+    QDir tmp_dir;
+
+    filters << "*.imm";
+
+    tmp_dir.setNameFilters(filters);
+    tmp_dir.setPath(IM_Database_Info.path());
+    file_listing = tmp_dir.entryList(QDir::NoDotAndDotDot | QDir::Files );
+
+    return file_listing;
 }
