@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QDebug>
+#include <QProgressDialog>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -64,37 +65,60 @@ QFileDialog FileDialog;
 void Dialog::on_Convert_pressed()
 {
 Incredimail_2 ic;
-QString sql, imm_db, attachment, eml;
-QFileInfo db;
-QStringList dir_listing;
+QString sql, attachment, eml, root_dir;
+QStringList dir_listing, file_listing;
 int email, deleted, file_offset, size, deleted_email = 0;
 
-   imm_db = ui->lineEdit->text();
-   db.setFile(imm_db);
-   ic.Set_Database_Path(db.path());
-   sql = attachment = db.path();
-   sql.append("/Containers.db");
-   attachment.append("/Attachments");
+   ic.IM_Database_Info.setFile(ui->lineEdit->text());
+   if( ic.IM_Database_Info.isFile() ) {
+       sql = attachment = root_dir = ic.IM_Database_Info.absolutePath();
+   } else if( ic.IM_Database_Info.isDir() ) {
+       sql = attachment = root_dir = ic.IM_Database_Info.absoluteFilePath();
+   }
 
-   ic.Set_Attachments_Directory(attachment);
+   sql.append("/Containers.db");
+   attachment.append("/Attachments/");
+   root_dir.append("/");
+
+   ic.IM_Attachment.setFile(attachment);
    ic.Set_SQLite_File(sql);
 
    if(ui->radioButton_3->isChecked()) {
-       dir_listing << imm_db;
+       file_listing << ic.IM_Database_Info.fileName();
    } else if(ui->radioButton_2->isChecked()) {
-       dir_listing = ic.Setup_IM_Directory_Processing();
+       file_listing = ic.Setup_IM_Directory_Processing();
    }
 
+   // convert to directories
+   for( int i = 0; i < file_listing.size(); i++ ) {
+       QString temp = root_dir;
+       root_dir.append(file_listing.value(i));
+       dir_listing << root_dir;
+       root_dir = temp;
+   }
+
+
    for( int i = 0; i < dir_listing.size(); i++ ) {
-      ic.Set_Database_File( dir_listing.at(0) );
+      ic.Set_Database_File( dir_listing.at(i) );
       ic.Email_Count(email, deleted);
+      QProgressDialog progress_bar("Converting...", "Abort", 0, email, this);
+      progress_bar.setWindowModality(Qt::WindowModal);
+      progress_bar.setMinimumDuration(0);
       for( int j = 0; j < email; j++ ) {
           ic.Get_Email_Offset_and_Size( file_offset, size, j, deleted_email );
-          // **** mkdir here ****
-          eml = QString("EML_File_%1.eml").arg(j);
+          eml = root_dir;
+          eml.append(file_listing.value(i));
+          eml.chop(4); // this is a quick hack to get rid of .imm
+          QDir emldir;
+          emldir.mkdir(eml);
+          eml.append( QString("/EML_File_%1.eml").arg(j) );
           ic.Extract_EML_File(eml, file_offset, size);
           ic.Insert_Attachments(eml);
+          progress_bar.setValue(j);
+          if(progress_bar.wasCanceled())
+             break;
       }
       ic.Close_Database_File();
    }
+
 }

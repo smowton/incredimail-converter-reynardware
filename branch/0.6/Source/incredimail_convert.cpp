@@ -7,14 +7,11 @@
 #include <QSqlRecord>
 #include <QVariant>
 #include <QDir>
+#include <QTextCodec>
 
 Incredimail_Convert::Incredimail_Convert()
 {
 // Todo!
-}
-
-void Incredimail_Convert::Set_Database_Path(QString Path) {
-    IM_Database_Info.setFile(Path);
 }
 
 
@@ -84,8 +81,20 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename ) {
            extract = old_eml_file.readLine();
            // if the eml contain an attachment then base64 encode it
            if(extract.contains(ATTACHMENT)) {
+               // decode and convert from base64
+               // windows-1251 stuff - 17 is the magic number
+               if(extract.contains("windows-1251")) {
+                   QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
+                   QByteArray temp;
+                   temp = extract64.fromBase64(extract.right(extract.size()-(ATTACHMENT.size()+17)));
+                   extract.chop(extract.size()-ATTACHMENT.size());
+                   extract.append(temp);
+                   qDebug() << extract;
+                   QTextCodec::setCodecForCStrings(QTextCodec::codecForName("latin1"));
+               }
+
                // still need the attachment
-               attachment_name = IM_Attachment.path();
+               attachment_name = IM_Attachment.absolutePath();
                attachment_name.append("/").append(extract.right(extract.size()-ATTACHMENT.size()));
                attachment_name = attachment_name.simplified();  // remove the junk
 
@@ -114,20 +123,6 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename ) {
 }
 
 
-bool Incredimail_Convert::Set_Attachments_Directory( QString attachment_path ) {
-
-    bool set_succussfully = false;
-
-    IM_Attachment.setFile(attachment_path);
-
-    if(IM_Attachment.isDir()) {
-        set_succussfully = true;
-    }
-
-    return set_succussfully;
-}
-
-
 QStringList Incredimail_Convert::Setup_IM_Directory_Processing( ) {
 
     QStringList filters, file_listing;
@@ -136,7 +131,7 @@ QStringList Incredimail_Convert::Setup_IM_Directory_Processing( ) {
     filters << "*.imm";
 
     tmp_dir.setNameFilters(filters);
-    tmp_dir.setPath(IM_Database_Info.path());
+    tmp_dir.setPath(IM_Database_Info.absoluteFilePath());
     file_listing = tmp_dir.entryList(QDir::NoDotAndDotDot | QDir::Files );
 
     return file_listing;
