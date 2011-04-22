@@ -36,6 +36,7 @@ QString ContainerId;
    if( sql_db.isOpen() && sql_db.isValid() && IM_Database.exists() ) {
        prepare.clear();
        // First, find the ContainerID in the sqlite database
+       qDebug() << "IM_Database_Info.fileName" << IM_Database_Info.fileName();
        prepare = QString("SELECT containerID FROM CONTAINERS WHERE FILENAME='%1'").arg(IM_Database_Info.baseName());
        qDebug() << "1 Get Email Offset and Size() - Prepare QString: " << prepare;
        query.prepare(prepare);

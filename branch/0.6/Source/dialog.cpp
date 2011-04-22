@@ -95,6 +95,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
        root_dir.append(file_listing.value(i));
        dir_listing << root_dir;
        root_dir = temp;
+       qDebug() << "File Listing:" << file_listing.at(i);
    }
 
 
@@ -105,6 +106,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
       progress_bar.setWindowModality(Qt::WindowModal);
       progress_bar.setMinimumDuration(0);
       for( int j = 0; j < email; j++ ) {
+          progress_bar.setLabelText(QString("Converting %1 of %2").arg(j).arg(email));
           ic.Get_Email_Offset_and_Size( file_offset, size, j, deleted_email );
           eml = root_dir;
           eml.append(file_listing.value(i));
@@ -112,6 +114,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
           QDir emldir;
           emldir.mkdir(eml);
           eml.append( QString("/EML_File_%1.eml").arg(j) );
+          // insert deleted check?
           ic.Extract_EML_File(eml, file_offset, size);
           ic.Insert_Attachments(eml);
           progress_bar.setValue(j);

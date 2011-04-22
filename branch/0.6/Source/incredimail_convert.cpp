@@ -22,6 +22,7 @@ bool Incredimail_Convert::Set_Database_File(QString Database) {
     IM_Database.setFileName(Database);
     if( IM_Database.exists() ) {
         ret = IM_Database.open(QIODevice::ReadOnly);
+        IM_Database_Info.setFile(Database);
     }
 
     return ret;
