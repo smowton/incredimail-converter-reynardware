@@ -14,6 +14,31 @@ Incredimail_Convert::Incredimail_Convert()
 // Todo!
 }
 
+void Incredimail_Convert::Setup_Internal_Class_Directories(QString text_string) {
+QString parser;
+QFileInfo file_info;
+
+     parser = text_string;
+     file_info.setFile(text_string);
+     parser.lastIndexOf("/");
+
+     if(file_info.isDir()) {
+         root_path = attachment_path = parser;
+         if( parser.lastIndexOf("/") == parser.size()-1 ) {
+             attachment_path = attachment_path.append("Attachments");
+         } else {
+             attachment_path = attachment_path.append("/Attachments");
+             root_path       = root_path.append("/");
+         }
+     } else if(file_info.isFile()) {
+         parser.chop( parser.size() - parser.lastIndexOf("/") );
+         root_path = attachment_path = parser;
+         root_path = root_path.append("/");
+         attachment_path = attachment_path.append("/Attachments");
+     } else {
+         // Not anything!
+     }
+}
 
 bool Incredimail_Convert::Set_Database_File(QString Database) {
 
@@ -21,8 +46,8 @@ bool Incredimail_Convert::Set_Database_File(QString Database) {
 
     IM_Database.setFileName(Database);
     if( IM_Database.exists() ) {
-        ret = IM_Database.open(QIODevice::ReadOnly);
         IM_Database_Info.setFile(Database);
+        ret = IM_Database.open(QIODevice::ReadOnly);
     }
 
     return ret;
@@ -95,7 +120,7 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename ) {
                }
 
                // still need the attachment
-               attachment_name = IM_Attachment.absolutePath();
+               attachment_name = attachment_path;
                attachment_name.append("/").append(extract.right(extract.size()-ATTACHMENT.size()));
                attachment_name = attachment_name.simplified();  // remove the junk
 
@@ -132,7 +157,7 @@ QStringList Incredimail_Convert::Setup_IM_Directory_Processing( ) {
     filters << "*.imm";
 
     tmp_dir.setNameFilters(filters);
-    tmp_dir.setPath(IM_Database_Info.absoluteFilePath());
+    tmp_dir.setPath(root_path);
     file_listing = tmp_dir.entryList(QDir::NoDotAndDotDot | QDir::Files );
 
     return file_listing;

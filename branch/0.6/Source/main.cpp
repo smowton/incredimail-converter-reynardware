@@ -19,16 +19,16 @@ QString message;
     QTextStream out(&file_handle);
     switch (type) {
     case QtDebugMsg:
-        message.append(QString("Debug   : <%1>").arg(msg));
+        message.append(QString("Debug   : %1").arg(msg));
         break;
     case QtWarningMsg:
-        message.append(QString("Warning : <%1>").arg(msg));
+        message.append(QString("Warning : %1").arg(msg));
         break;
     case QtCriticalMsg:
-        message.append(QString("Critical: <%1>").arg(msg));
+        message.append(QString("Critical: %1").arg(msg));
         break;
     case QtFatalMsg:
-        message.append(QString("Fatal   : <%1>").arg(msg));
+        message.append(QString("Fatal   : %1").arg(msg));
         abort();
     }
     out << message << endl;

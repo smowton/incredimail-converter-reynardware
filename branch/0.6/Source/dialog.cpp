@@ -25,7 +25,10 @@ Dialog::Dialog(QWidget *parent) :
 
     qDebug() << "Start of new run";
 
-    ui->radioButton_3->setChecked(true);
+    ui->radioButton_2->setChecked(true);
+
+    ui->toolButton_2->setHidden(true);
+    ui->toolButton_3->setHidden(true);
 
     // Find the home directory
     HomeDir = hd.homePath();
@@ -67,29 +70,16 @@ QFileDialog FileDialog;
 
 void Dialog::on_Convert_pressed() {
 Incredimail_2 ic;
-QString sql, attachment, eml, root_dir;
+QString sql, eml, temp_str;
 QStringList dir_listing, file_listing;
 QMessageBox msgbox;
 int email, deleted, file_offset, size, deleted_email = 0;
 
-   ic.IM_Database_Info.setFile(ui->lineEdit->text());
    qDebug() << "Text from LineEdit:" << ui->lineEdit->text();
+   ic.Setup_Internal_Class_Directories(ui->lineEdit->text());
 
-   if( ic.IM_Database_Info.isFile() ) {
-       sql = attachment = root_dir = ic.IM_Database_Info.absolutePath();
-   } else if( ic.IM_Database_Info.isDir() ) {
-       sql = attachment = root_dir = ic.IM_Database_Info.absoluteFilePath();
-   }
-
-   sql.append("/Containers.db");
-   attachment.append("/Attachments/");
-   root_dir.append("/");
-
-   ic.IM_Attachment.setFile(attachment);
-   if( !ic.IM_Attachment.exists() ) {
-      qWarning() << "Attachment directory does not exist, current attachment dir:" << attachment;
-      // Please select a attachment directory
-   }
+   sql = ic.root_path;
+   sql.append("Containers.db");
 
    if( !ic.Set_SQLite_File(sql) ) {
       qWarning() << "SQL Database does not exist, current sql file:" << sql;
@@ -97,7 +87,9 @@ int email, deleted, file_offset, size, deleted_email = 0;
    }
 
    if(ui->radioButton_3->isChecked()) {
-       file_listing << ic.IM_Database_Info.fileName();
+       temp_str = ui->lineEdit->text();
+       temp_str = temp_str.right( temp_str.size() - temp_str.lastIndexOf("/") );
+       file_listing << temp_str;
        qDebug() << "Single Database Selected";
    } else if(ui->radioButton_2->isChecked()) {
        file_listing = ic.Setup_IM_Directory_Processing();
@@ -106,13 +98,11 @@ int email, deleted, file_offset, size, deleted_email = 0;
 
    // convert to directories
    for( int i = 0; i < file_listing.size(); i++ ) {
-       QString temp = root_dir;
-       root_dir.append(file_listing.value(i));
-       dir_listing << root_dir;
-       root_dir = temp;
+       QString temp = ic.root_path;
+       temp = temp.append(file_listing.value(i));
+       dir_listing << temp;
        qDebug() << "Directory Listing:" << dir_listing.at(i);
    }
-
 
    for( int i = 0; i < dir_listing.size(); i++ ) {
       ic.Set_Database_File( dir_listing.at(i) );
@@ -123,7 +113,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
       for( int j = 0; j < email; j++ ) {
           progress_bar.setLabelText(QString("Converting %1 of %2").arg(j).arg(email));
           ic.Get_Email_Offset_and_Size( file_offset, size, j, deleted_email );
-          eml = root_dir;
+          eml = ic.root_path;
           eml.append(file_listing.value(i));
           eml.chop(4); // this is a quick hack to get rid of .imm
 

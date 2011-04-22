@@ -84,12 +84,21 @@ public:
     //              on the protected variable IM_Database_Info
     //**************************************************************************
 
+    void Setup_Internal_Class_Directories(QString text_string);
+    //**************************************************************************
+    // Input  : QString - The main line edit field
+    // Output : None
+    // Description: This function parsers the root_path and attachment_path varibiles
+    //              from text string.   It also detects if it is a dir or a file.
+    //**************************************************************************
+
 public:
-    QFileInfo IM_Database_Info; // The imm database directory
-    QFileInfo IM_Attachment;    // The attachment directory
+    QString root_path;          // The imm database root path
+    QString attachment_path;    // The attachment path
 
 protected:
     QFile IM_Database;          // The imm database file handle
+    QFileInfo IM_Database_Info; // QFileInfo for the base file name - This variable is set at Set_Database_File()
 };
 
 #endif // INCREDIMAIL_CONVERT_H
