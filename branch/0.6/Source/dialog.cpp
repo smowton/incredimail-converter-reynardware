@@ -26,9 +26,10 @@ Dialog::Dialog(QWidget *parent) :
     qDebug() << "Start of new run";
 
     ui->radioButton_2->setChecked(true);
-
     ui->toolButton_2->setHidden(true);
     ui->toolButton_3->setHidden(true);
+    ui->label_2->setHidden(true);
+    ui->label_3->setHidden(true);
 
     // Find the home directory
     HomeDir = hd.homePath();
@@ -73,8 +74,10 @@ Incredimail_2 ic;
 QString sql, eml, temp_str;
 QStringList dir_listing, file_listing;
 QMessageBox msgbox;
+QFileInfo check_attachment;
 int email, deleted, file_offset, size, deleted_email = 0;
 
+   qDebug() << "User Pressed the Convert Button";
    qDebug() << "Text from LineEdit:" << ui->lineEdit->text();
    ic.Setup_Internal_Class_Directories(ui->lineEdit->text());
 
@@ -83,7 +86,22 @@ int email, deleted, file_offset, size, deleted_email = 0;
 
    if( !ic.Set_SQLite_File(sql) ) {
       qWarning() << "SQL Database does not exist, current sql file:" << sql;
-      // Please select a Containers.db
+      qWarning() << "Looking if user selected any " << ui->label_3->text();
+      sql = ui->label_3->text();
+      if( sql.isNull() || !ic.Set_SQLite_File(sql) ) {
+          msgbox.setText("Bad SQL File Exiting!");
+          msgbox.exec();
+          qFatal("Bad SQL File Exiting!");
+      }
+   }
+
+   check_attachment.setFile(ic.attachment_path);
+   if(!check_attachment.exists()) {
+       qWarning() << "Bad attachment path, checking if user selected one" << ic.attachment_path;
+       check_attachment.setFile(ui->label_2->text());
+       if( !check_attachment.exists() ) {
+          qCritical() << "Attachment Directory does not exit, continuing on without attachments";
+       }
    }
 
    if(ui->radioButton_3->isChecked()) {
@@ -121,7 +139,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
           emldir.mkdir(eml);
           eml.append( QString("/EML_File_%1.eml").arg(j) );
 
-          if( !deleted_email ) {
+          if( !deleted_email && ui->checkBox->isChecked() ) {
              ic.Extract_EML_File(eml, file_offset, size);
              ic.Insert_Attachments(eml);
           }
@@ -132,6 +150,68 @@ int email, deleted, file_offset, size, deleted_email = 0;
       }
       ic.Close_Database_File();
    }
+   qDebug() << "Converion Completed";
    msgbox.setText("Completed");
    msgbox.exec();
+}
+
+void Dialog::on_toolButton_2_pressed()
+{
+QFileDialog FileDialog;
+
+   ui->label_2->setText( FileDialog.getExistingDirectory(this, tr("Attachment Directory"), "." ) );
+
+   ui->toolButton_2->setDown(false);
+}
+
+void Dialog::on_toolButton_3_pressed()
+{
+QFileDialog FileDialog;
+
+   ui->label_3->setText( FileDialog.getOpenFileName(this, tr("Containers File"), ".", tr("SQLite DB (*.db)") ) );
+
+   ui->toolButton_3->setDown(false);
+}
+
+
+void Dialog::on_lineEdit_textChanged(QString )
+{
+    QFileInfo check_sql, check_attachment;
+    QString sql_file;
+    Incredimail_2 temp_ic;
+
+        temp_ic.Setup_Internal_Class_Directories(ui->lineEdit->text());
+
+        sql_file = temp_ic.root_path;
+        sql_file.append("Containers.db");
+
+        check_sql.setFile(sql_file);
+
+        if( !check_sql.exists() ) {
+           ui->toolButton_3->show();
+           ui->label_3->show();
+           ui->label_3->setText("Please Select Containers.db file");
+       } else {
+           ui->toolButton_3->setHidden(true);
+           ui->label_3->setHidden(true);
+           ui->label_3->clear();
+       }
+
+        check_attachment.setFile(temp_ic.attachment_path);
+
+        if(!check_attachment.exists()) {
+            ui->toolButton_2->show();
+            ui->label_2->show();
+            ui->label_2->setText("Please Select Attachment Directory");
+        } else {
+           ui->toolButton_2->setHidden(true);
+           ui->label_2->setHidden(true);
+           ui->label_2->clear();
+        }
+
+        if( ui->label_2->isHidden() && ui->label_3->isHidden() ) {
+           ui->Convert->setEnabled(true);
+        } else {
+           ui->Convert->setEnabled(false);
+        }
 }

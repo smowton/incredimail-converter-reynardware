@@ -36,6 +36,9 @@ public:
     ~Dialog();
 
 private slots:
+    void on_lineEdit_textChanged(QString );
+    void on_toolButton_3_pressed();
+    void on_toolButton_2_pressed();
     void on_toolButton_pressed();
     void on_Convert_pressed();
 
