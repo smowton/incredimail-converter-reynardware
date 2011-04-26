@@ -25,6 +25,8 @@ Dialog::Dialog(QWidget *parent) :
 
     qDebug() << "Start of new run";
 
+    ui->version_label->setOpenExternalLinks(true);
+
     ui->radioButton_2->setChecked(true);
     ui->toolButton_2->setHidden(true);
     ui->toolButton_3->setHidden(true);
@@ -161,7 +163,15 @@ QFileDialog FileDialog;
 
    ui->label_2->setText( FileDialog.getExistingDirectory(this, tr("Attachment Directory"), "." ) );
 
+   ui->toolButton_2->setHidden(true);
+   ui->label_2->setHidden(true);
    ui->toolButton_2->setDown(false);
+
+   if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
+      ui->Convert->setEnabled(true);
+   } else {
+      ui->Convert->setEnabled(false);
+   }
 }
 
 void Dialog::on_toolButton_3_pressed()
@@ -170,7 +180,15 @@ QFileDialog FileDialog;
 
    ui->label_3->setText( FileDialog.getOpenFileName(this, tr("Containers File"), ".", tr("SQLite DB (*.db)") ) );
 
+   ui->toolButton_3->setHidden(true);
+   ui->label_3->setHidden(true);
    ui->toolButton_3->setDown(false);
+
+   if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
+      ui->Convert->setEnabled(true);
+   } else {
+      ui->Convert->setEnabled(false);
+   }
 }
 
 
@@ -190,11 +208,10 @@ void Dialog::on_lineEdit_textChanged(QString )
         if( !check_sql.exists() ) {
            ui->toolButton_3->show();
            ui->label_3->show();
-           ui->label_3->setText("Please Select Containers.db file");
+           ui->label_3->setText(tr("Please Select Containers.db file"));
        } else {
            ui->toolButton_3->setHidden(true);
            ui->label_3->setHidden(true);
-           ui->label_3->clear();
        }
 
         check_attachment.setFile(temp_ic.attachment_path);
@@ -202,14 +219,13 @@ void Dialog::on_lineEdit_textChanged(QString )
         if(!check_attachment.exists()) {
             ui->toolButton_2->show();
             ui->label_2->show();
-            ui->label_2->setText("Please Select Attachment Directory");
+            ui->label_2->setText(tr("Please Select Attachment Directory"));
         } else {
            ui->toolButton_2->setHidden(true);
            ui->label_2->setHidden(true);
-           ui->label_2->clear();
         }
 
-        if( ui->label_2->isHidden() && ui->label_3->isHidden() ) {
+        if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
            ui->Convert->setEnabled(true);
         } else {
            ui->Convert->setEnabled(false);

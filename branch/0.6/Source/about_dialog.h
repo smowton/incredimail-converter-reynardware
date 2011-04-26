@@ -37,6 +37,11 @@ public:
 
 private:
     Ui::About_Dialog *ui;
+
+private slots:
+
+private slots:
+    void on_pushButton_pressed();
 };
 
 #endif // ABOUT_DIALOG_H
