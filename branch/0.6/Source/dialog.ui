@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>Reynardware 0.6</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/.ico/reynard.ico</normaloff>:/.ico/reynard.ico</iconset>
+  </property>
   <widget class="myLineEdit" name="lineEdit">
    <property name="geometry">
     <rect>
@@ -210,6 +214,8 @@ p, li { white-space: pre-wrap; }
    <header location="global">clicklabel.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

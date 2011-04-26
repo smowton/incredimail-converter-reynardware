@@ -10,6 +10,7 @@ QT       += core gui \
 TARGET = Reynardware
 TEMPLATE = app
 
+RESOURCES = resource.qrc
 
 SOURCES += main.cpp\
         dialog.cpp \

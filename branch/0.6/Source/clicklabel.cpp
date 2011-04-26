@@ -6,7 +6,7 @@
 
 ClickLabel::ClickLabel( QWidget *parent ): QLabel(parent)
 {
-
+// todo
 }
 
 void ClickLabel::mousePressEvent( QMouseEvent *e )
