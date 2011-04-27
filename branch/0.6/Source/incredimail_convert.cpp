@@ -1,3 +1,23 @@
+//***********************************************************************************************
+//     The contents of this file are subject to the Mozilla Public License
+//     Version 1.1 (the "License"); you may not use this file except in
+//     compliance with the License. You may obtain a copy of the License at
+//     http://www.mozilla.org/MPL/
+//
+//     Software distributed under the License is distributed on an "AS IS"
+//     basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+//     License for the specific language governing rights and limitations
+//     under the License.
+//
+//     The Original Code is ReynardWare Incredimail Converter.
+//
+//     The Initial Developer of the Original Code is David P. Owczarski
+//          Created March 20, 2009 (Versions 0.1, 0.2, 0.3, 0.53)
+//          Updated April 27, 2011 (Versions 0.6)
+//
+//     Contributor(s):
+//
+//************************************************************************************************
 #include "incredimail_convert.h"
 
 #include <QSqlDatabase>
@@ -11,7 +31,7 @@
 
 Incredimail_Convert::Incredimail_Convert()
 {
-// Todo!
+// Nothing in the constructor
 }
 
 void Incredimail_Convert::Setup_Internal_Class_Directories(QString text_string) {
@@ -109,6 +129,7 @@ void Incredimail_Convert::Insert_Attachments( QString eml_filename ) {
            if(extract.contains(ATTACHMENT)) {
                // decode and convert from base64
                // windows-1251 stuff - 17 is the magic number
+               // This needs to be cleaned up - windows-1251 is russian
                if(extract.contains("windows-1251")) {
                    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("windows-1251"));
                    QByteArray temp;

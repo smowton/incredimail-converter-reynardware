@@ -1,3 +1,23 @@
+//***********************************************************************************************
+//     The contents of this file are subject to the Mozilla Public License
+//     Version 1.1 (the "License"); you may not use this file except in
+//     compliance with the License. You may obtain a copy of the License at
+//     http://www.mozilla.org/MPL/
+//
+//     Software distributed under the License is distributed on an "AS IS"
+//     basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+//     License for the specific language governing rights and limitations
+//     under the License.
+//
+//     The Original Code is ReynardWare Incredimail Converter.
+//
+//     The Initial Developer of the Original Code is David P. Owczarski
+//          Created March 20, 2009 (Versions 0.1, 0.2, 0.3, 0.53)
+//          Updated April 27, 2011 (Versions 0.6)
+//
+//     Contributor(s):
+//
+//************************************************************************************************
 #include "dialog.h"
 #include "about_dialog.h"
 #include "ui_dialog.h"
@@ -43,7 +63,7 @@ Dialog::Dialog(QWidget *parent) :
         qDebug() << "Home Directory Path" << HomeDir;
         ui->lineEdit->setText(HomeDir);
     } else {
-        msgbox.setText("Could not find the default database directory");
+        msgbox.setText(tr("Could not find the default database directory"));
         qWarning() << "Could not find the default database directory";
         msgbox.setInformativeText(HomeDir);
         msgbox.exec();
@@ -91,7 +111,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
       qWarning() << "Looking if user selected any " << ui->label_3->text();
       sql = ui->label_3->text();
       if( sql.isNull() || !ic.Set_SQLite_File(sql) ) {
-          msgbox.setText("Bad SQL File Exiting!");
+          msgbox.setText(tr("Bad SQL File Exiting!"));
           msgbox.exec();
           qFatal("Bad SQL File Exiting!");
       }
@@ -127,11 +147,11 @@ int email, deleted, file_offset, size, deleted_email = 0;
    for( int i = 0; i < dir_listing.size(); i++ ) {
       ic.Set_Database_File( dir_listing.at(i) );
       ic.Email_Count(email, deleted);
-      QProgressDialog progress_bar("Converting...", "Abort", 0, email, this);
+      QProgressDialog progress_bar(tr("Converting..."), tr("Abort"), 0, email, this);
       progress_bar.setWindowModality(Qt::WindowModal);
       progress_bar.setMinimumDuration(0);
       for( int j = 0; j < email; j++ ) {
-          progress_bar.setLabelText(QString("Converting %1 of %2").arg(j).arg(email));
+          progress_bar.setLabelText(QString(tr("Converting %1 of %2")).arg(j).arg(email));
           ic.Get_Email_Offset_and_Size( file_offset, size, j, deleted_email );
           eml = ic.root_path;
           eml.append(file_listing.value(i));
@@ -153,7 +173,7 @@ int email, deleted, file_offset, size, deleted_email = 0;
       ic.Close_Database_File();
    }
    qDebug() << "Converion Completed";
-   msgbox.setText("Completed");
+   msgbox.setText(tr("Completed"));
    msgbox.exec();
 }
 
@@ -167,11 +187,7 @@ QFileDialog FileDialog;
    ui->label_2->setHidden(true);
    ui->toolButton_2->setDown(false);
 
-   if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
-      ui->Convert->setEnabled(true);
-   } else {
-      ui->Convert->setEnabled(false);
-   }
+   hide_toolbuttons();
 }
 
 void Dialog::on_toolButton_3_pressed()
@@ -184,11 +200,7 @@ QFileDialog FileDialog;
    ui->label_3->setHidden(true);
    ui->toolButton_3->setDown(false);
 
-   if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
-      ui->Convert->setEnabled(true);
-   } else {
-      ui->Convert->setEnabled(false);
-   }
+   hide_toolbuttons();
 }
 
 
@@ -225,9 +237,15 @@ void Dialog::on_lineEdit_textChanged(QString )
            ui->label_2->setHidden(true);
         }
 
-        if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
-           ui->Convert->setEnabled(true);
-        } else {
-           ui->Convert->setEnabled(false);
-        }
+        hide_toolbuttons();
+
+}
+
+void Dialog::hide_toolbuttons()
+{
+    if( ui->toolButton_2->isHidden() && ui->toolButton_3->isHidden() ) {
+       ui->Convert->setEnabled(true);
+    } else {
+       ui->Convert->setEnabled(false);
+    }
 }

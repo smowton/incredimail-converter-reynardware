@@ -12,8 +12,8 @@
 //     The Original Code is ReynardWare Incredimail Converter.
 //
 //     The Initial Developer of the Original Code is David P. Owczarski
-//          Created March 20, 2009
-//          Updated April 19, 2011
+//          Created March 20, 2009 (Versions 0.1, 0.2, 0.3, 0.53)
+//          Updated April 27, 2011 (Versions 0.6)
 //
 //     Contributor(s):
 //

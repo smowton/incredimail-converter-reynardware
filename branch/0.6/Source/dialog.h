@@ -12,8 +12,8 @@
 //     The Original Code is ReynardWare Incredimail Converter.
 //
 //     The Initial Developer of the Original Code is David P. Owczarski
-//          Created March 20, 2009
-//          Updated April 19, 2011
+//          Created March 20, 2009 (Versions 0.1, 0.2, 0.3, 0.53)
+//          Updated April 27, 2011 (Versions 0.6)
 //
 //     Contributor(s):
 //
@@ -36,14 +36,15 @@ public:
     ~Dialog();
 
 private slots:
-    void on_lineEdit_textChanged(QString );
-    void on_toolButton_3_pressed();
-    void on_toolButton_2_pressed();
-    void on_toolButton_pressed();
-    void on_Convert_pressed();
+    void on_lineEdit_textChanged(QString );  // the main line edit
+    void on_toolButton_3_pressed();          // sql toolbutton
+    void on_toolButton_2_pressed();          // attachment toolbutton
+    void on_toolButton_pressed();            // the main line edit tool button
+    void on_Convert_pressed();               // convert button
 
 private:
     Ui::Dialog *ui;
+    void hide_toolbuttons();                 // set to hide or unhide the sql or attachment request
 };
 
 #endif // DIALOG_H
