@@ -26,7 +26,7 @@
 
 ClickLabel::ClickLabel( QWidget *parent ): QLabel(parent)
 {
-// todo
+// constructor
 }
 
 void ClickLabel::mousePressEvent( QMouseEvent *e )
