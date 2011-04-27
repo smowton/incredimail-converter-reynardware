@@ -12,6 +12,8 @@ TEMPLATE = app
 
 RESOURCES = resource.qrc
 
+RC_FILE = resource.rc
+
 SOURCES += main.cpp\
         dialog.cpp \
     incredimail_convert.cpp \

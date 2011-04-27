@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resource.qrc">
-    <normaloff>:/.ico/reynard.ico</normaloff>:/.ico/reynard.ico</iconset>
+    <normaloff>:/.ico/fox.ico</normaloff>:/.ico/fox.ico</iconset>
   </property>
   <widget class="myLineEdit" name="lineEdit">
    <property name="geometry">

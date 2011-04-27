@@ -1,5 +1,6 @@
 <RCC>
-  <qresource prefix=".ico">
-    <file>reynard.ico</file>
-  </qresource>
+    <qresource prefix="/.ico">
+        <file>fox.ico</file>
+        <file>reynard.ico</file>
+    </qresource>
 </RCC>
