@@ -25,6 +25,7 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QDebug>
+#include <QFile>
 
 Incredimail_2::Incredimail_2()
 {
@@ -34,8 +35,12 @@ Incredimail_2::Incredimail_2()
 
 bool Incredimail_2::Set_SQLite_File(QString Database) {
 
-    sql_db.setDatabaseName(Database);
-    qDebug() << "Opening SQL Database :" << Database;
+    if( QFile::exists(Database) ) {
+       sql_db.setDatabaseName(Database);
+       qDebug() << "Opening SQL Database :" << Database;
+    } else {
+       qDebug() << "Does not exist SQL Database :" << Database;
+    }
 
     return sql_db.open();
 }

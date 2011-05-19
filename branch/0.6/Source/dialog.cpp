@@ -68,6 +68,7 @@ Dialog::Dialog(QWidget *parent) :
         msgbox.setInformativeText(HomeDir);
         msgbox.exec();
     }
+    emit(on_lineEdit_textChanged(NULL));  // set selection if needed
 }
 
 

@@ -2,5 +2,6 @@
     <qresource prefix="/.ico">
         <file>fox.ico</file>
         <file>reynard.ico</file>
+        <file>bw_fox.ico</file>
     </qresource>
 </RCC>
