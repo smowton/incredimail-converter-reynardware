@@ -574,6 +574,10 @@ enum INCREDIMAIL_VERSION incredimail_version;
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETPOS, 0, 0 );
 
       inputfile  = CreateFile(temp_file_listing, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+	  if (inputfile == INVALID_HANDLE_VALUE) {
+		  MessageBox(global_hwnd, "Can't open temporary file", "Error!", MB_OK);
+		  return;
+	  }
 
       do {
          ZeroMemory( im_database_filename, sizeof( im_database_filename ) );
