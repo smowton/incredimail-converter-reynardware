@@ -586,6 +586,13 @@ enum INCREDIMAIL_VERSION incredimail_version;
          read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
          // cleaning up the line feeds from FindDatabaseFiles function
          i = (int) strlen( im_database_filename );
+		 if (i < 2) {
+			 char msg[MAX_CHAR];
+			 snprintf(msg, MAX_CHAR, "Ignoring invalid filename %s", im_database_filename);
+			 MessageBox(global_hwnd, msg, "Error!", MB_OK);
+			 continue;
+		 }
+
          im_database_filename[i-2] = 0;
 
          if( read_length != 0 ) {
@@ -601,6 +608,11 @@ enum INCREDIMAIL_VERSION incredimail_version;
             pdest = strrchr( im_database_filename, '\\' );
             strncpy_s( temp_path, sizeof(temp_path), im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
             incredimail_version = FindIncredimailVersion( temp_path );
+			if (incredimail_version == INCREDIMAIL_VERSION_UNKNOWN) {
+				char msg[CHAR_MAX];
+				sprintf_s(msg, CHAR_MAX, "Directory %s doesn't match a known Incredimail version", temp_path);
+				continue;
+			}
 
             if( incredimail_version == INCREDIMAIL_XE ) {
                // get the header filename

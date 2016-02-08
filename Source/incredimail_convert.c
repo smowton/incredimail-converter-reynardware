@@ -348,7 +348,7 @@ int total_count = 1;
 
 enum INCREDIMAIL_VERSIONS FindIncredimailVersion( char *directory_search ) {
 char temp_path[MAX_CHAR];
-enum INCREDIMAIL_VERSIONS ret;
+enum INCREDIMAIL_VERSIONS ret = INCREDIMAIL_VERSION_UNKNOWN;
 WIN32_FIND_DATA FindFileData;
 HANDLE hFind;
 
