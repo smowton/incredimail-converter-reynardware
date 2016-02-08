@@ -324,6 +324,10 @@ int total_count = 1;
    list_output = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    
    hFind = FindFirstFile(database_filename, &FindFileData);
+   if (hFind == INVALID_HANDLE_VALUE) {
+	   MessageBox(global_hwnd, "No .imm files found within given directory", "Error!", MB_OK);
+	   return -1;
+   }
 
    sprintf(temp_string, "%s\\%s%c%c", directory_search, FindFileData.cFileName, 0x0D, 0x0A );
    WriteFile( list_output, temp_string, (DWORD) strlen( temp_string ), &dummy, NULL );

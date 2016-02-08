@@ -567,6 +567,8 @@ enum INCREDIMAIL_VERSION incredimail_version;
    } else {
 
       total_count = FindDatabaseFiles( im_database_filename, temp_file_listing );
+	  if (total_count < 0)
+		  return;
 
       // set the progress bar 2
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETRANGE, 0, (LPARAM) MAKELPARAM (0, total_count));

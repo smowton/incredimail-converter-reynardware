@@ -28,6 +28,8 @@ typedef enum INCREDIMAIL_VERSIONS {
    INCREDIMAIL_2,
 };
 
+extern HWND global_hwnd;
+
 void email_count( char *, int *, int * );
 //***************************************************************************
 // INPUTS:
