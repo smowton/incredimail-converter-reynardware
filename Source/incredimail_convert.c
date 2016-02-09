@@ -21,6 +21,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "sqlite3.h"
 #include "increadimail_convert.h"
@@ -346,33 +347,121 @@ int total_count = 1;
    return total_count;
 }
 
-enum INCREDIMAIL_VERSIONS FindIncredimailVersion( char *directory_search ) {
-char temp_path[MAX_CHAR];
-enum INCREDIMAIL_VERSIONS ret = INCREDIMAIL_VERSION_UNKNOWN;
-WIN32_FIND_DATA FindFileData;
-HANDLE hFind;
+static int testimdb(const char* filename) {
 
-   // is there an Incredimail XE header file 
-   strcpy( temp_path, directory_search );
-   strcat( temp_path, "\\*.imh");
-   hFind = FindFirstFile(temp_path, &FindFileData);
-   FindClose( hFind );
+	struct _stat statbuf;
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+	int ret = 0;
 
-   if( hFind != INVALID_HANDLE_VALUE ) {
-      ret = INCREDIMAIL_XE;
-   }
+	if (_stat(filename, &statbuf) != 0)
+		return 0;
 
-   // is there an Incredimail 2 database, i.e. containers.db 
-   strcpy( temp_path, directory_search );
-   strcat( temp_path, "\\*.db");
-   hFind = FindFirstFile(temp_path, &FindFileData);
+	if (sqlite3_open_v2(filename, &db, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK)
+		return 0;
 
-   if( hFind != INVALID_HANDLE_VALUE ) {
-      ret = INCREDIMAIL_2;
-   }
-   FindClose( hFind );
+	if (sqlite3_prepare_v2(db, "select count(*) from Containers", -1, &stmt, NULL) != SQLITE_OK)
+		goto outdb;
 
-   return ret;
+	if (sqlite3_step(stmt) != SQLITE_ROW)
+		goto outstmt;
+
+	if (sqlite3_column_int(stmt, 0) == 0)
+		goto outstmt;
+
+	ret = 1;
+
+outstmt:
+	sqlite3_reset(stmt);
+	sqlite3_finalize(stmt);
+
+outdb:
+	sqlite3_close(db);
+
+	return ret;
+
+}
+
+enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search) {
+	char temp_path[MAX_CHAR];
+	enum INCREDIMAIL_VERSIONS ret = INCREDIMAIL_VERSION_UNKNOWN;
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	// is there an Incredimail XE header file 
+	strcpy(temp_path, directory_search);
+	strcat(temp_path, "\\*.imh");
+	hFind = FindFirstFile(temp_path, &FindFileData);
+	FindClose(hFind);
+
+	if (hFind != INVALID_HANDLE_VALUE) {
+		ret = INCREDIMAIL_XE;
+	}
+
+	// is there an Incredimail 2 database, i.e. containers.db 
+	strcpy(temp_path, directory_search);
+	strcat(temp_path, "\\containers.db");
+
+	if (testimdb(temp_path)) {
+		ret = INCREDIMAIL_2;
+	}
+	else {
+		// Is there a messageStore.db, indicating maildir format?
+		strcpy(temp_path, directory_search);
+		strcat(temp_path, "\\messageStore.db");
+		if (testimdb(temp_path))
+			ret = INCREDIMAIL_2_MAILDIR;
+	}
+
+    return ret;
+}
+
+void Incredimail_2_Maildir_Email_Count(char *filename, int *email_total, int *deleted_emails) {
+
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+
+	const char* allMailQuery = "select count(*) from Headers";
+	const char* notDeletedQuery = "select count(*) from Headers where deleted = 0";
+
+	*email_total = 0;
+	*deleted_emails = 0;
+
+	if (sqlite3_open(filename, &db) != SQLITE_OK) {
+		char msg[4096];
+		snprintf(msg, 4096, "Unable to open sqlite3 DB %s", filename);
+		MessageBox(global_hwnd, msg, "Error!", MB_OK);
+		return;
+	}
+
+	if (sqlite3_prepare_v2(db, allMailQuery, -1, &stmt, NULL) != SQLITE_OK)
+		goto outdb;
+
+	if (sqlite3_step(stmt) != SQLITE_ROW)
+		goto outstmt;
+
+	*email_total = sqlite3_column_int(stmt, 0);
+
+	sqlite3_reset(stmt);
+	sqlite3_finalize(stmt);
+
+	if (sqlite3_prepare_v2(db, notDeletedQuery, -1, &stmt, NULL) != SQLITE_OK)
+		goto outdb;
+
+	if (sqlite3_step(stmt) != SQLITE_ROW)
+		goto outstmt;
+
+	*deleted_emails = sqlite3_column_int(stmt, 0);
+
+outstmt:
+
+	sqlite3_reset(stmt);
+	sqlite3_finalize(stmt);
+
+outdb:
+
+	sqlite3_close(db);
+
 }
 
 void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_emails ) {

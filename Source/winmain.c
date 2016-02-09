@@ -84,7 +84,6 @@ BOOL CALLBACK Winload( HWND hdwnd, UINT message, WPARAM wparam, LPARAM lparam ) 
 // strings
 char file_title[MAX_CHAR];
 char window_title[MAX_CHAR];
-char filter[MAX_CHAR];
 char im_database_filename[MAX_CHAR];
 char im_header_filename[MAX_CHAR];
 char im_attachments_directory[MAX_CHAR];
@@ -238,7 +237,6 @@ HANDLE hFind;
                } else {
                   ZeroMemory( &window_title, sizeof( window_title ) );
                   ZeroMemory( &openfile, sizeof( openfile ) );
-                  ZeroMemory( &filter, sizeof( filter ) );
                   ZeroMemory( &version, sizeof( version ) );
 
                   openfile.hwndOwner      = hdwnd;
@@ -246,37 +244,41 @@ HANDLE hFind;
                   openfile.Flags          = OFN_READONLY;
                   openfile.nMaxFile       = sizeof( im_database_filename );
                   openfile.lpstrFileTitle = file_title;
-                  openfile.lpstrFile      = &im_database_filename[0];
+                  openfile.lpstrFile      = im_database_filename;
                   openfile.nMaxFileTitle  = sizeof( file_title );
 
-                  strcpy_s( window_title, sizeof("Open Incredimail Database File"), "Open Incredimail Database File");
+                  strcpy_s( window_title, sizeof(window_title), "Open Incredimail Database File");
                   openfile.lpstrTitle = window_title;
-
-                  strcpy_s( filter, sizeof("Incredimail Database *.imm\0*.imm\0\0"), "Incredimail Database *.imm\0*.imm\0\0" );
-                  openfile.lpstrFilter = &filter[0];
-
-                  strcpy_s( im_database_filename, sizeof("*.imm"), "*.imm" );
+				  const char* filter = "Incredimail Database\0*.imm;*.db\0";
+                  openfile.lpstrFilter = filter;
 
                   if( GetOpenFileName( &openfile ) == TRUE ) {
-                     SetDlgItemText( hdwnd, IDC_EDIT1, im_database_filename );
-
                      // get the directory (reuse varible im_header_filename)
                      strncpy_s( im_header_filename, MAX_CHAR , im_database_filename, strlen( im_database_filename ) - strlen( openfile.lpstrFileTitle ) );
-                     if( FindIncredimailVersion( im_header_filename ) == INCREDIMAIL_XE ) {
+					 enum INCREDIMAIL_VERSION version = FindIncredimailVersion(im_header_filename);
+					 if(version == INCREDIMAIL_XE) {
                         strncpy_s( im_header_filename, MAX_CHAR ,im_database_filename, strlen( im_database_filename ) - 3 );
                         strcat_s( im_header_filename, MAX_CHAR, "imh" );
                         email_count( im_header_filename, &e_count, &d_count );
                         SetDlgItemText( hdwnd, IDC_STATIC6, "Version: Incredimail XE" );
-                     } else {
-                        Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
+                     } else if(version == INCREDIMAIL_2) {
+                        Incredimail_2_Email_Count(im_database_filename, &e_count, &d_count);
                         SetDlgItemText( hdwnd, IDC_STATIC6, "Version: Incredimail 2" );
-                     }
+					 } else if (version == INCREDIMAIL_2_MAILDIR) {
+						Incredimail_2_Maildir_Email_Count(im_database_filename, &e_count, &d_count);
+						SetDlgItemText(hdwnd, IDC_STATIC6, "Version: Incredimail 2 Maildir");
+					 } else {
+						SetDlgItemText(hdwnd, IDC_STATIC6, "No database found");
+						return 1;
+					 }
                      sprintf_s( debug_str, MAX_CHAR, "Email Count: %d", e_count );
                      SetDlgItemText( hdwnd, IDC_ECOUNT, debug_str );
                      sprintf_s( debug_str, MAX_CHAR, "Deleted Emails: %d", d_count );
                      SetDlgItemText( hdwnd, IDC_STATIC8, debug_str );
                      sprintf_s( debug_str, MAX_CHAR, "Database Name: %s", im_database_filename );
                      SetDlgItemText( hdwnd, IDC_DATABASE_NAME, debug_str );
+
+					 SetDlgItemText(hdwnd, IDC_EDIT1, im_database_filename);
 
                      // insert automatic attachment directory here
                      strncpy_s( im_database_filename, MAX_CHAR, openfile.lpstrFile, strlen(openfile.lpstrFile)-strlen(openfile.lpstrFileTitle) );

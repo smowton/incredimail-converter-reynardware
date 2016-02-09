@@ -27,6 +27,8 @@ typedef enum INCREDIMAIL_VERSIONS {
    INCREDIMAIL_VERSION_UNKNOWN,
    INCREDIMAIL_XE,
    INCREDIMAIL_2,
+   INCREDIMAIL_2_MAILDIR // Some versions of IM2 use a maildir-like format instead of a .imm file (~mbox).
+						 // This might depend on precise version of IM, Windows version or both.
 };
 
 extern HWND global_hwnd;
@@ -150,6 +152,8 @@ void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_e
 // DESCRIPTION:
 //
 //***************************************************************************
+
+void Incredimail_2_Maildir_Email_Count(char *filename, int *email_total, int *deleted_emails);
 
 void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email );
 //***************************************************************************
