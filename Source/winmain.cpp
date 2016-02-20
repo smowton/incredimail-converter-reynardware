@@ -412,11 +412,23 @@ struct im2_maildir_folder {
 
 };
 
+void WINAPI process_emails2(const char* im_database_filename, const char* im_attachments_directory);
+
 void WINAPI process_emails() {
+	
+	char im_database_filename[MAX_CHAR];
+	char im_attachments_directory[MAX_CHAR];
+
+	GetDlgItemText(global_hwnd, IDC_EDIT1, (LPSTR)&im_database_filename, 256);       // get the incredimail database name
+	GetDlgItemText(global_hwnd, IDC_EDIT2, (LPSTR)&im_attachments_directory, 256);   // get the attachement directory name
+
+	process_emails2(im_database_filename, im_attachments_directory);
+
+}
+
+void WINAPI process_emails2(const char* im_database_filename, const char* im_attachments_directory) {
 
 char im_header_filename[MAX_CHAR];
-char im_database_filename[MAX_CHAR];
-char im_attachments_directory[MAX_CHAR];
 char debug_str[MAX_CHAR];
 char new_eml_filename[MAX_CHAR];
 char export_directory[MAX_CHAR];
@@ -430,23 +442,18 @@ int i, result_header, result_database, result_attachment, result_create_temp;
 struct _stat buf;
 float percent_complete;
 int real_count = 0;
-char *pdest;
+const char *pdest;
 
 enum INCREDIMAIL_VERSIONS incredimail_version;
 
    // Zero out the string names
    ZeroMemory( &im_header_filename, sizeof( im_header_filename ) );
-   ZeroMemory( &im_database_filename, sizeof( im_database_filename ) );
-   ZeroMemory( &im_attachments_directory, sizeof( im_attachments_directory ) );
    ZeroMemory( &new_eml_filename, sizeof( new_eml_filename ) );
    ZeroMemory( &export_directory, sizeof( export_directory ) );
    ZeroMemory( &temp_path, sizeof( temp_path ) );
    ZeroMemory( &temp_filename, sizeof( temp_filename ) );
 
    SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_SETPOS, 0, 0 );                 // reset the progress bar to 0%
-
-   GetDlgItemText( global_hwnd, IDC_EDIT1, (LPSTR) &im_database_filename, 256 );       // get the incredimail database name
-   GetDlgItemText( global_hwnd, IDC_EDIT2, (LPSTR) &im_attachments_directory, 256 );   // get the attachement directory name
 
    pdest = strrchr( im_database_filename, '\\' );
    strncpy_s( temp_path, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
@@ -477,8 +484,8 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
       }
    } else {
       // the export directory is based off of the database name
-	  char* extsep = strrchr(im_database_filename, '.');
-	  char* dirsep = strrchr(im_database_filename, '\\');
+	  const char* extsep = strrchr(im_database_filename, '.');
+	  const char* dirsep = strrchr(im_database_filename, '\\');
 	  if (extsep != NULL && (dirsep == NULL || dirsep < extsep))
 		  strncpy_s(export_directory, MAX_CHAR, im_database_filename, (extsep - im_database_filename));
 	  else {
@@ -718,10 +725,20 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
       }   
    } else {
 
+	  // This looks for *.imm, for the IncrediMail XE or non-maildir case.
       total_count = FindDatabaseFiles( im_database_filename, temp_file_listing );
-	  if (total_count < 0)
+	  if (total_count < 0) {
+		  // See if we can find an IncrediMail 2 Maildir store instead:
+		  std::string storename = std::string(im_database_filename) + "\\MessageStore.db";
+		  struct _stat buf;
+		  if (!_stat(storename.c_str(), &buf))
+			  process_emails2(storename.c_str(), im_attachments_directory);
+		  else {
+			  MessageBox(global_hwnd, "No .imm files and no MessageStore.db found within given directory", "Error!", MB_OK);
+		  }
 		  return;
-
+	  }
+	  
       // set the progress bar 2
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETRANGE, 0, (LPARAM) MAKELPARAM (0, total_count));
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETSTEP, 1, 0 );

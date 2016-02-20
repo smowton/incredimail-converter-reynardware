@@ -37,7 +37,7 @@ extern "C" {
 
 	extern HWND global_hwnd;
 
-	void email_count(char *, int *, int *);
+	void email_count(const char *, int *, int *);
 	//***************************************************************************
 	// INPUTS:
 	//
@@ -73,7 +73,7 @@ extern "C" {
 	//
 	//***************************************************************************
 
-	void extract_eml_files(char *filename_data, char *, int offset, unsigned int size);
+	void extract_eml_files(const char *filename_data, char *, int offset, unsigned int size);
 	//***************************************************************************
 	// INPUTS:
 	//
@@ -145,7 +145,7 @@ extern "C" {
 	//
 	//***************************************************************************
 
-	void Incredimail_2_Email_Count(char *filename, int *email_total, int *deleted_emails);
+	void Incredimail_2_Email_Count(const char *filename, int *email_total, int *deleted_emails);
 	//***************************************************************************
 	// INPUTS:
 	//
@@ -157,9 +157,9 @@ extern "C" {
 	//
 	//***************************************************************************
 
-	void Incredimail_2_Maildir_Email_Count(char *filename, int *email_total, int *deleted_emails);
+	void Incredimail_2_Maildir_Email_Count(const char *filename, int *email_total, int *deleted_emails);
 
-	void Incredimail_2_Get_Email_Offset_and_Size(char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email);
+	void Incredimail_2_Get_Email_Offset_and_Size(const char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email);
 	//***************************************************************************
 	// INPUTS:
 	//

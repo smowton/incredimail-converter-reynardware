@@ -29,7 +29,7 @@
 
 const char *ATTACHMENT = "----------[%ImFilePath%]----------";
 
-void email_count( char *filename, int *email_total, int *deleted_emails ) {
+void email_count( const char *filename, int *email_total, int *deleted_emails ) {
 int dummy = 1;
 int i;
 int e_count = 0;
@@ -140,7 +140,7 @@ unsigned int file_size, sizer;
 }
 
 
-void extract_eml_files( char *filename_data, char *eml_filename, int offset, unsigned int size ) {
+void extract_eml_files( const char *filename_data, char *eml_filename, int offset, unsigned int size ) {
 HANDLE helping_hand;
 HANDLE writing_hand;
 int j, k, dummy;
@@ -325,10 +325,8 @@ int total_count = 1;
    list_output = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    
    hFind = FindFirstFile(database_filename, &FindFileData);
-   if (hFind == INVALID_HANDLE_VALUE) {
-	   MessageBox(global_hwnd, "No .imm files found within given directory", "Error!", MB_OK);
+   if (hFind == INVALID_HANDLE_VALUE)
 	   return -1;
-   }
 
    sprintf(temp_string, "%s\\%s%c%c", directory_search, FindFileData.cFileName, 0x0D, 0x0A );
    WriteFile( list_output, temp_string, (DWORD) strlen( temp_string ), &dummy, NULL );
@@ -416,7 +414,7 @@ enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search) {
     return ret;
 }
 
-void Incredimail_2_Maildir_Email_Count(char *filename, int *email_total, int *deleted_emails) {
+void Incredimail_2_Maildir_Email_Count(const char *filename, int *email_total, int *deleted_emails) {
 
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
@@ -464,7 +462,7 @@ outdb:
 
 }
 
-void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_emails ) {
+void Incredimail_2_Email_Count( const char *filename, int *email_total, int *deleted_emails ) {
 char sql[MAX_CHAR];
 char trimmed_filename[MAX_CHAR];
 char containerID[MAX_CHAR];
@@ -555,7 +553,7 @@ sqlite3_stmt *stmt;
 }
 
 
-void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email ) {
+void Incredimail_2_Get_Email_Offset_and_Size( const char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email ) {
 
 sqlite3 *db;
 sqlite3_stmt *stmt;
