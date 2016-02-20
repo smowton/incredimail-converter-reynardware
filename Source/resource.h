@@ -32,6 +32,7 @@
 #define IDC_WWW_LINK                    1027
 #define IDC_TITLE                       1028
 #define IDC_VERSION                     1029
+#define IDC_EMAIL_LINK2                 1029
 #define IDC_RADIO1                      1030
 #define IDC_EXPORT_FILE                 1030
 #define IDC_RADIO2                      1031
@@ -45,7 +46,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        132
+#define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1036
 #define _APS_NEXT_SYMED_VALUE           101

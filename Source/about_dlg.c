@@ -10,21 +10,30 @@ HWND g_hwnd;
 BOOL CALLBACK About_Box( HWND hdwnd, UINT message, WPARAM wparam, LPARAM lparam ) {
 
 static BOOL email_inrange;  // Is the mouse in range of the static email control box
+static BOOL email2_inrange;  // Is the mouse in range of the static email control box
 static BOOL www_inrange;    // Is the mouse in range of the static www control box
 
    switch( message ) {
       case WM_PAINT:
+		 set_static_text("chris@smowton.net", IDC_EMAIL_LINK2, email2_inrange);
          set_static_text( "Reynardware@gmail.com", IDC_EMAIL_LINK, email_inrange );
          set_static_text( "Project Website", IDC_WWW_LINK, www_inrange );
          return 0;  // WM_PAINT must return 0
 
       case WM_INITDIALOG:
          g_hwnd = hdwnd;          // set the global handle for support functions
-         SetDlgItemText( g_hwnd, IDC_VERSION, INCREDIMAIL_CONVERTER_VERSION );
+		 {
+			char buf[1024];
+			GetDlgItemText(g_hwnd, IDC_TITLE, buf, 1024);
+			strcat_s(buf, 1024, " ");
+			strcat_s(buf, 1024, INCREDIMAIL_CONVERTER_VERSION);
+			SetDlgItemText( g_hwnd, IDC_TITLE, buf );
+		 }
          return 1;
  
       case WM_MOUSEMOVE:
          email_inrange = in_range( IDC_EMAIL_LINK, lparam );
+		 email2_inrange = in_range(IDC_EMAIL_LINK2, lparam);
          www_inrange   = in_range( IDC_WWW_LINK, lparam );
          SendMessage( g_hwnd, WM_PAINT, 0, 0 );
          InvalidateRect( g_hwnd, NULL, FALSE);                  
@@ -39,9 +48,13 @@ static BOOL www_inrange;    // Is the mouse in range of the static www control b
             case IDC_EMAIL_LINK:
                ShellExecute(NULL, TEXT("open"), "mailto:reynardware@gmail.com", NULL, NULL, SW_SHOWNORMAL);
                return 1;
+
+			case IDC_EMAIL_LINK2:
+				ShellExecute(NULL, TEXT("open"), "mailto:chris@smowton.net", NULL, NULL, SW_SHOWNORMAL);
+				return 1;
             
             case IDC_WWW_LINK:
-               ShellExecute(NULL, TEXT("open"), "http://code.google.com/p/incredimail-converter-reynardware/", NULL, NULL, SW_SHOWNORMAL);
+               ShellExecute(NULL, TEXT("open"), "https://github.com/smowton/incredimail-converter-reynardware", NULL, NULL, SW_SHOWNORMAL);
                return 1;
          }
    }

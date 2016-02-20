@@ -13,7 +13,7 @@
 //
 //     The Initial Developer of the Original Code is David P. Owczarski, created March 20, 2009
 //
-//     Contributor(s):
+//     Contributor(s): Christopher Smowton <chris@smowton.net>
 //
 //************************************************************************************************
 #define _CRT_SECURE_NO_WARNINGS  // remove the new mircosoft security warnings

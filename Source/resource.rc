@@ -52,7 +52,7 @@ END
 
 IDD_DIALOG1 DIALOGEX 0, 0, 293, 302
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "ReynardWare Incredimail Converter"
+CAPTION "Incredimail Converter"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Convert",IDOK,7,281,50,14
@@ -84,17 +84,17 @@ BEGIN
     RTEXT           "",IDC_OVERALL_PERCENT,205,251,79,8,NOT WS_VISIBLE
 END
 
-IDD_ABOUT DIALOGEX 0, 0, 181, 95
+IDD_ABOUT DIALOGEX 0, 0, 181, 101
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,65,74,50,14
-    LTEXT           "Incredimail Converter",IDC_TITLE,47,10,69,8
-    LTEXT           "By",IDC_STATIC,85,25,9,8,SS_NOTIFY
-    LTEXT           "v0.3",IDC_VERSION,122,10,52,8
-    CTEXT           "Reynardware@gmail.com",IDC_EMAIL_LINK,49,41,87,8,SS_NOTIFY
-    CTEXT           "Project Website",IDC_WWW_LINK,64,56,56,8,SS_NOTIFY
+    DEFPUSHBUTTON   "OK",IDOK,65,80,50,14
+    CTEXT           "Incredimail Converter",IDC_TITLE,7,10,167,18
+    LTEXT           "By",IDC_STATIC,85,28,9,8,SS_NOTIFY
+    CTEXT           "Reynardware@gmail.com\r\nchris@smowton.net",IDC_EMAIL_LINK,47,38,87,8,SS_NOTIFY
+    CTEXT           "Project Website",IDC_WWW_LINK,63,63,56,8,SS_NOTIFY
+    CTEXT           "chris@smowton.net",IDC_EMAIL_LINK2,46,51,87,8,SS_NOTIFY
 END
 
 
@@ -119,7 +119,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 174
         TOPMARGIN, 7
-        BOTTOMMARGIN, 88
+        BOTTOMMARGIN, 94
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -141,6 +141,11 @@ IDI_REYNARD             ICON                    "reynard.ico"
 //
 
 IDD_DIALOG1 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

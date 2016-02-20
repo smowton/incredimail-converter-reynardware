@@ -21,7 +21,7 @@
 #define __ABOUT_DLG__
 
 // VERSION*****************************************
-#define INCREDIMAIL_CONVERTER_VERSION "v0.53"
+#define INCREDIMAIL_CONVERTER_VERSION "CS release 1 (based on v0.53)"
 //*************************************************
 
 #ifdef __cplusplus

@@ -13,7 +13,7 @@
 //
 //     The Initial Developer of the Original Code is David P. Owczarski, created March 20, 2009
 //
-//     Contributor(s):
+//     Contributor(s): Christopher Smowton <chris@smowton.net>
 //
 //************************************************************************************************
 
