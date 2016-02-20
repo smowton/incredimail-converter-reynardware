@@ -665,7 +665,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 
 		 }
 
-		 insert_attachments(temp_filename, message_attachment_dir.c_str(), target_path.c_str());
+		 im_to_eml(temp_filename, message_attachment_dir.c_str(), target_path.c_str());
 		 DeleteFile(temp_filename);
 
          // update the progress
@@ -867,7 +867,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 
                   strcat_s( export_directory, MAX_CHAR, "\\" );
                   strcat_s( export_directory, MAX_CHAR, new_eml_filename );
-                  insert_attachments( temp_filename, im_attachments_directory, export_directory );
+                  im_to_eml( temp_filename, im_attachments_directory, export_directory );
                   DeleteFile( temp_filename );
                }
                

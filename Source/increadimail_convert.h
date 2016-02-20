@@ -85,7 +85,7 @@ extern "C" {
 	//
 	//***************************************************************************
 
-	void insert_attachments(char *eml_filename, const char *attachments_path, const char *);
+	void im_to_eml(char *eml_filename, const char *attachments_path, const char *);
 	//***************************************************************************
 	// INPUTS:
 	//

@@ -161,8 +161,7 @@ char extract_data[1024];
       CloseHandle( writing_hand );
 }
 
-
-void insert_attachments( char *eml_filename, const char *attachments_path, const char *final_email_filename ) {
+void insert_attachments( char *im_filename, const char *attachments_path, const char *final_email_filename ) {
 
 HANDLE inputfile, outputfile, encoded_file;
 HANDLE encode64_input_file, encode64_output_file;
@@ -176,7 +175,7 @@ char temp_path[MAX_CHAR];
 char temp_filename[MAX_CHAR];
 
 
-   inputfile  = CreateFile(eml_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+   inputfile  = CreateFile(im_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
    outputfile = CreateFile(final_email_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
    read_length = 1;
 
@@ -227,6 +226,129 @@ char temp_filename[MAX_CHAR];
    CloseHandle( outputfile );
 }
 
+enum find_multipart_states {
+	FMS_START,
+	FMS_CONTENTTYPE,
+	FMS_HEADEREND1,
+	FMS_HEADEREND2,
+	FMS_BOUNDARY,
+	FMS_DONE
+};
+
+void im_to_eml(char* im_filename, const char* attachments_path, const char* eml_filename) {
+
+	// Step 1: modify in-place if necessary to correct a Mime content-type that uses imbndry instead of boundary.
+	char buf[4096];
+	char first_boundary[256];
+	first_boundary[0] = '\0';
+
+	FILE* fin = fopen(im_filename, "r");
+	enum find_multipart_states state = FMS_START;
+
+	if (strstr(eml_filename, "airplane parts") && strstr(eml_filename, "email30.eml")) {
+		printf("Hit!\n");
+	}
+
+	while (fgets(buf, 4096, fin) && first_boundary[0] == '\0') {
+		int linelen = strlen(buf);
+		if (linelen > 0 && buf[linelen - 1] != '\n')
+			fprintf(stderr, "May have missed an important header in %s\r\n", im_filename);
+		switch (state) {
+		case FMS_START:
+			if (strstr(buf, "Content-Type: multipart"))
+				state = FMS_CONTENTTYPE;
+			break;
+		case FMS_CONTENTTYPE:
+			if (strstr(buf, "imbndary="))
+				state = FMS_HEADEREND1;
+			break;
+		case FMS_HEADEREND1:
+			if (!strcmp(buf, "\n"))
+				state = FMS_HEADEREND2;
+			break;
+		case FMS_HEADEREND2:
+			if (!strcmp(buf, "\n"))
+				state = FMS_BOUNDARY;
+			break;
+		case FMS_BOUNDARY:
+			if (!strncmp(buf, "--", 2)) {
+				const char* lineend = strchr(buf, '\n');
+				int copychars = strlen(buf) - 2;
+				if (!lineend)
+					fprintf(stderr, "MIME boundary without newline?");
+				else
+					--copychars;
+				strncpy_s(first_boundary, 256, buf + 2, copychars);
+				state = FMS_DONE;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (first_boundary[0] != '\0') {
+
+		int needed = strlen(im_filename) + 10;
+		char* fixed_name = malloc(needed);
+		if (!fixed_name) {
+			fprintf(stderr, "Failed to allocate %d bytes in im_to_eml\n", needed);
+			exit(1);
+		}
+		
+		sprintf_s(fixed_name, needed, "%s_fixed", im_filename);
+
+		fseek(fin, 0, SEEK_SET);
+		FILE* fout = fopen(fixed_name, "w");
+		if (!fout) {
+			fprintf(stderr, "Failed to open %s in im_to_eml\n", fixed_name);
+			exit(1);
+		}
+
+		state = FMS_START;
+
+		while (fgets(buf, 4096, fin)) {
+			
+			switch (state) {
+			case FMS_START:
+				if (strstr(buf, "Content-Type: multipart"))
+					state = FMS_CONTENTTYPE;
+				break;
+			case FMS_CONTENTTYPE:
+			{
+				char* boundary_loc = strstr(buf, "imbndary=");
+				if(boundary_loc) {
+					int off = boundary_loc - buf;
+					sprintf_s(boundary_loc, 4096 - off, "boundary=\"%s\"\n", first_boundary);
+					state = FMS_DONE;
+				}
+				break;
+			}
+			default:
+				break;
+			}
+
+			fwrite(buf, 1, strlen(buf), fout);
+
+		}
+
+		fclose(fout);
+		fclose(fin);
+
+		DeleteFile(im_filename);
+		MoveFile(fixed_name, im_filename);
+
+	}
+	else {
+
+		fclose(fin);
+
+	}
+
+	// Step 2: Weave in any attachments that IncrediMail has placed out-of-line:
+	insert_attachments(im_filename, attachments_path, eml_filename);
+
+}
 
 void get_database_version(char *database, char *version ) {
 HANDLE helping_hand;
