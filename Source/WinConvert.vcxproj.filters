@@ -30,7 +30,7 @@
     <ClCompile Include="sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="winmain.c">
+    <ClCompile Include="winmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

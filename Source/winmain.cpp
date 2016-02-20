@@ -28,10 +28,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "resource.h"
 #include "increadimail_convert.h"
 #include "about_dlg.h"
 #include "winmain.h"
+#include "sqlite3.h"
 
 typedef enum {
    THREAD_NOT_STARTED = 0,
@@ -165,7 +170,7 @@ HANDLE hFind;
          // ok, this is should be easy
          // automatic search of IM database directory
          ZeroMemory( tbuffer, 256 );
-         GetUserName( tbuffer, &tint );
+         GetUserName( tbuffer, (LPDWORD)&tint );
          sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Documents and Settings\\%s\\Local Settings\\Application Data\\IM\\Identities\\*", tbuffer );
          hFind = FindFirstFile(im_header_filename, &FindFileData);  // should be .
          if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, ".") == 0 ) {
@@ -255,7 +260,7 @@ HANDLE hFind;
                   if( GetOpenFileName( &openfile ) == TRUE ) {
                      // get the directory (reuse varible im_header_filename)
                      strncpy_s( im_header_filename, MAX_CHAR , im_database_filename, strlen( im_database_filename ) - strlen( openfile.lpstrFileTitle ) );
-					 enum INCREDIMAIL_VERSION version = FindIncredimailVersion(im_header_filename);
+					 enum INCREDIMAIL_VERSIONS version = FindIncredimailVersion(im_header_filename);
 					 if(version == INCREDIMAIL_XE) {
                         strncpy_s( im_header_filename, MAX_CHAR ,im_database_filename, strlen( im_database_filename ) - 3 );
                         strcat_s( im_header_filename, MAX_CHAR, "imh" );
@@ -384,6 +389,28 @@ HANDLE hFind;
    return 0;
 }
 
+struct im2_maildir_folder {
+	
+	struct im2_maildir_folder* parent;
+	std::vector<struct im2_maildir_folder*> children;
+	std::string id;
+	std::string foldername;
+
+	im2_maildir_folder() : parent(0) {}
+
+	bool create_directories(const std::string& prefix, std::map<std::string, std::string>& container_to_dir) {
+
+		std::string path = prefix + "\\" + foldername;
+		if ((!CreateDirectory(path.c_str(), NULL)) && GetLastError() != ERROR_ALREADY_EXISTS)
+			return false;
+		container_to_dir[id] = path;
+		for (std::vector<struct im2_maildir_folder*>::iterator it = children.begin(), itend = children.end(); it != itend; ++it)
+			(*it)->create_directories(path, container_to_dir);
+		return true;
+
+	}
+
+};
 
 void WINAPI process_emails() {
 
@@ -405,7 +432,7 @@ float percent_complete;
 int real_count = 0;
 char *pdest;
 
-enum INCREDIMAIL_VERSION incredimail_version;
+enum INCREDIMAIL_VERSIONS incredimail_version;
 
    // Zero out the string names
    ZeroMemory( &im_header_filename, sizeof( im_header_filename ) );
@@ -450,7 +477,14 @@ enum INCREDIMAIL_VERSION incredimail_version;
       }
    } else {
       // the export directory is based off of the database name
-      strncpy_s( export_directory, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 4 );
+	  char* extsep = strrchr(im_database_filename, '.');
+	  char* dirsep = strrchr(im_database_filename, '\\');
+	  if (extsep != NULL && (dirsep == NULL || dirsep < extsep))
+		  strncpy_s(export_directory, MAX_CHAR, im_database_filename, (extsep - im_database_filename));
+	  else {
+		  strcpy_s(export_directory, im_database_filename);
+		  strcat_s(export_directory, ".exported");
+	  }
       DeleteDirectory( export_directory );
       CreateDirectory( export_directory, NULL );
       strcat_s( export_directory, MAX_CHAR, "\\" );
@@ -461,9 +495,11 @@ enum INCREDIMAIL_VERSION incredimail_version;
 
       if( incredimail_version == INCREDIMAIL_XE ) {
          email_count( im_header_filename, &e_count, &d_count );
-      } else {
+      } else if(incredimail_version == INCREDIMAIL_2) {
          Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
-      }
+	  } else {
+		 Incredimail_2_Maildir_Email_Count(im_database_filename, &e_count, &d_count);
+	  }
 
       // get the state of the checkbox
       export_all_email = (int) SendDlgItemMessage( global_hwnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
@@ -474,34 +510,148 @@ enum INCREDIMAIL_VERSION incredimail_version;
       // Get temp windows path
       result_create_temp = GetTempPath( sizeof( temp_path ), temp_path );
 
+	  std::map<std::string, im2_maildir_folder> containers;
+	  std::map<std::string, std::string> container_to_dir;
+	  sqlite3 *db = NULL;
+	  sqlite3_stmt *stmt = NULL;
+
+	  if (incredimail_version == INCREDIMAIL_2_MAILDIR) {
+		  
+		  if (sqlite3_open_v2(im_database_filename, &db, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK) {
+			  MessageBox(global_hwnd, "Can't open database", "Error!", MB_OK);
+			  return;
+		  }
+
+		  if (sqlite3_prepare_v2(db, "select ContainerID, ParentContainerID, Label from Containers", -1, &stmt, NULL) != SQLITE_OK) {
+			  sqlite3_close(db);
+			  MessageBox(global_hwnd, "Containers query failed", "Error!", MB_OK);
+			  return;
+		  }
+
+		  while (sqlite3_step(stmt) == SQLITE_ROW) {
+
+			  const char* thisid = (const char*)sqlite3_column_text(stmt, 0);
+			  const char* parentid = (const char*)sqlite3_column_text(stmt, 1);
+			  const char* label = (const char*)sqlite3_column_text(stmt, 2);
+			  
+			  im2_maildir_folder& thisfolder = containers[thisid];
+			  if (parentid && strlen(parentid)) {
+				  thisfolder.parent = &containers[parentid];
+				  thisfolder.parent->children.push_back(&thisfolder);
+			  }
+			  thisfolder.id = thisid;
+			  thisfolder.foldername = label;
+
+		  }
+
+		  int rootidx = 0;
+		  for (std::map<std::string, im2_maildir_folder>::iterator it = containers.begin(), itend = containers.end(); it != itend; ++it) {
+
+			  if (it->second.parent)
+				  continue;
+			  char rootlabel[64];
+			  sprintf_s(rootlabel, "root folder %d", ++rootidx);
+			  it->second.foldername = rootlabel;
+			  if (!it->second.create_directories(export_directory, container_to_dir)) {
+				  MessageBox(global_hwnd, "Failed to create some message directory", "Error!", MB_OK);
+				  sqlite3_close(db);
+				  return;
+			  }
+
+		  }
+
+		  sqlite3_reset(stmt);
+		  sqlite3_finalize(stmt);
+
+		  if (sqlite3_prepare_v2(db, "select HeaderID, ContainerID, Location, Deleted from Headers", -1, &stmt, NULL) != SQLITE_OK) {
+			  sqlite3_close(db);
+			  MessageBox(global_hwnd, "Headers query failed", "Error!", MB_OK);
+			  return;
+		  }
+
+	  }
+
+	  std::string messages_dir = im_database_filename;
+	  size_t truncate_off = messages_dir.rfind('\\');
+	  if (truncate_off == std::string::npos)
+		  truncate_off = 0;
+	  messages_dir.erase(truncate_off);
+	  messages_dir.append("\\Messages");
+
       for( i = 0; i < e_count; i++ ) {
          offset = 0;
-         if( incredimail_version == INCREDIMAIL_XE ) {
-            get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
-         } else {
-            Incredimail_2_Get_Email_Offset_and_Size( im_database_filename, &offset, &size, i, &deleted_email );
-         }
 
-         if( (export_all_email == BST_CHECKED) || !deleted_email ) {
-            // setup the temp eml file name
-            sprintf_s( new_eml_filename, MAX_CHAR, "email%d.eml", i );
+		 std::string message_attachment_dir;
 
-            if( result_create_temp ) {
-               GetTempFileName( temp_path, "eml", 0, temp_filename );
-            }
-            // extract the eml file in the temp directory
-            extract_eml_files( im_database_filename, temp_filename, offset, size );
+		 sprintf_s(new_eml_filename, MAX_CHAR, "email%d.eml", i);
+		 GetTempFileName(temp_path, "eml", 0, temp_filename);
+		 std::string target_path;
 
-            ZeroMemory( export_directory, sizeof( export_directory ) );
-            strcpy_s( export_directory, MAX_CHAR, im_database_filename);
-            pdest = strrchr( export_directory, '.' );                  
-            export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
-            
-            strcat_s( export_directory, MAX_CHAR, "\\" );
-            strcat_s( export_directory, MAX_CHAR, new_eml_filename );
-            insert_attachments( temp_filename, im_attachments_directory, export_directory );
-            DeleteFile( temp_filename );
-         }
+		 if (incredimail_version == INCREDIMAIL_2_MAILDIR) {
+			 
+			 if (sqlite3_step(stmt) != SQLITE_ROW) {
+				 MessageBox(global_hwnd, "Unexpected failure to fetch a header row!", "Error!", MB_OK);
+				 sqlite3_close(db);
+				 return;
+			 }
+
+			 if (export_all_email != BST_CHECKED && sqlite3_column_int(stmt, 3))
+				 continue;
+
+			 const char* container = (const char*)sqlite3_column_text(stmt, 1);
+			 std::map<std::string, std::string>::iterator findit = container_to_dir.find(container);
+			 if (findit == container_to_dir.end()) {
+				 MessageBox(global_hwnd, "Message with unknown container?", "Error!", MB_OK);
+				 sqlite3_close(db);
+				 return;
+			 }
+
+			 target_path = findit->second + "\\" + new_eml_filename;
+
+			 const char* headerid = (const char*)sqlite3_column_text(stmt, 0);
+			 const char* subfolder = (const char*)sqlite3_column_text(stmt, 2);
+
+			 std::string source_path = messages_dir + "\\" + subfolder + "\\" + headerid + "\\msg.iml";
+			 message_attachment_dir = messages_dir + "\\" + subfolder + "\\" + headerid + "\\Attachments";
+
+			 if (!CopyFile(source_path.c_str(), temp_filename, FALSE)) {
+				 MessageBox(global_hwnd, "Failed copying IML file!", "Error!", MB_OK);
+				 sqlite3_close(db);
+				 return;
+			 }
+
+		 }
+		 else {
+
+			 if (incredimail_version == INCREDIMAIL_XE) {
+				 get_email_offset_and_size(im_header_filename, &offset, &size, i, e_count, &deleted_email);
+			 }
+			 else {
+				 Incredimail_2_Get_Email_Offset_and_Size(im_database_filename, &offset, &size, i, &deleted_email);
+			 }
+
+			 if ((export_all_email != BST_CHECKED) && deleted_email)
+				 continue;
+
+			 // extract the eml file in the temp directory
+			 extract_eml_files(im_database_filename, temp_filename, offset, size);
+
+			 ZeroMemory(export_directory, sizeof(export_directory));
+			 strcpy_s(export_directory, MAX_CHAR, im_database_filename);
+			 pdest = strrchr(export_directory, '.');
+			 export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
+
+			 strcat_s(export_directory, MAX_CHAR, "\\");
+			 strcat_s(export_directory, MAX_CHAR, new_eml_filename);
+
+			 target_path = std::string(export_directory);
+			 message_attachment_dir = im_attachments_directory;
+
+		 }
+
+		 insert_attachments(temp_filename, message_attachment_dir.c_str(), target_path.c_str());
+		 DeleteFile(temp_filename);
+
          // update the progress
          percent_complete =  ( ( (float) (i+1)/ (float) e_count) ) * 100;
          sprintf_s( debug_str, MAX_CHAR, "%d of %d (%0.0f%%)", i+1 ,e_count, percent_complete );
@@ -543,7 +693,7 @@ DWORD result_create_temp;
 struct _stat buf;
 
 char *pdest;
-enum INCREDIMAIL_VERSION incredimail_version;
+enum INCREDIMAIL_VERSIONS incredimail_version;
 
    // Zero out the string names
    ZeroMemory( temp_file_listing, sizeof( temp_file_listing ) );

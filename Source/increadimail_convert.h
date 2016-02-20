@@ -23,148 +23,156 @@
 #define S_LEN 1024*2
 #define MAX_CHAR 256
 
-typedef enum INCREDIMAIL_VERSIONS {
-   INCREDIMAIL_VERSION_UNKNOWN,
-   INCREDIMAIL_XE,
-   INCREDIMAIL_2,
-   INCREDIMAIL_2_MAILDIR // Some versions of IM2 use a maildir-like format instead of a .imm file (~mbox).
-						 // This might depend on precise version of IM, Windows version or both.
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern HWND global_hwnd;
+	enum INCREDIMAIL_VERSIONS {
+		INCREDIMAIL_VERSION_UNKNOWN,
+		INCREDIMAIL_XE,
+		INCREDIMAIL_2,
+		INCREDIMAIL_2_MAILDIR // Some versions of IM2 use a maildir-like format instead of a .imm file (~mbox).
+							  // This might depend on precise version of IM, Windows version or both.
+	};
 
-void email_count( char *, int *, int * );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	extern HWND global_hwnd;
 
-void get_email_offset_and_size( char *, unsigned int *, unsigned int *, int, int, int * );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	void email_count(char *, int *, int *);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-void get_database_version( char *, char * );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	void get_email_offset_and_size(char *, unsigned int *, unsigned int *, int, int, int *);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-void extract_eml_files( char *filename_data, char *, int offset, unsigned int size );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	void get_database_version(char *, char *);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-void insert_attachments( char *eml_filename, char *attachments_path, char * );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	void extract_eml_files(char *filename_data, char *, int offset, unsigned int size);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-int DeleteDirectory(const char *);
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	void insert_attachments(char *eml_filename, const char *attachments_path, const char *);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-int ReadOneLine( HANDLE infile, char *buffer, int max_line_length );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	int DeleteDirectory(const char *);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-int FindDatabaseFiles( char *directory_search, char *temp_file_listing );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	int ReadOneLine(HANDLE infile, char *buffer, int max_line_length);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-enum INCREDIMAIL_VERSIONS FindIncredimailVersion( char *directory_search );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	int FindDatabaseFiles(char *directory_search, char *temp_file_listing);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-void Incredimail_2_Email_Count( char *filename, int *email_total, int *deleted_emails );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-void Incredimail_2_Maildir_Email_Count(char *filename, int *email_total, int *deleted_emails);
+	void Incredimail_2_Email_Count(char *filename, int *email_total, int *deleted_emails);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
 
-void Incredimail_2_Get_Email_Offset_and_Size( char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email );
-//***************************************************************************
-// INPUTS:
-//
-// OUTPUTS:
-//
-// RETURN VALUE:
-//
-// DESCRIPTION:
-//
-//***************************************************************************
+	void Incredimail_2_Maildir_Email_Count(char *filename, int *email_total, int *deleted_emails);
+
+	void Incredimail_2_Get_Email_Offset_and_Size(char *filename, unsigned int *file_offset, unsigned int *size, int email_index, int *deleted_email);
+	//***************************************************************************
+	// INPUTS:
+	//
+	// OUTPUTS:
+	//
+	// RETURN VALUE:
+	//
+	// DESCRIPTION:
+	//
+	//***************************************************************************
+
+#ifdef __cplusplus // End extern "C"
+}
+#endif
 
 #endif

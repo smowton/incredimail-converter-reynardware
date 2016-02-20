@@ -100,7 +100,7 @@
     <ClCompile Include="incredimail_convert.c" />
     <ClCompile Include="shell.c" />
     <ClCompile Include="sqlite3.c" />
-    <ClCompile Include="winmain.c" />
+    <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="about_dlg.h" />

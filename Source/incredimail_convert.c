@@ -162,7 +162,7 @@ char extract_data[1024];
 }
 
 
-void insert_attachments( char *eml_filename, char *attachments_path, char *final_email_filename ) {
+void insert_attachments( char *eml_filename, const char *attachments_path, const char *final_email_filename ) {
 
 HANDLE inputfile, outputfile, encoded_file;
 HANDLE encode64_input_file, encode64_output_file;
