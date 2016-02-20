@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Shellapi.h>
+#include <Shlobj.h>
 #include <winuser.h>
 #include <shlobj.h>
 #include <sys/types.h>
@@ -91,6 +92,7 @@ char file_title[MAX_CHAR];
 char window_title[MAX_CHAR];
 char im_database_filename[MAX_CHAR];
 char im_header_filename[MAX_CHAR];
+wchar_t im_header_filename_w[MAX_CHAR];
 char im_attachments_directory[MAX_CHAR];
 char debug_str[MAX_CHAR];
 char debug_str2[MAX_CHAR];
@@ -114,9 +116,8 @@ DWORD                dwThreadId;
 DWORD                ExitCode;
 static DWORD         export_directory;
 
-TCHAR tbuffer[256];
 int tint = 256;
-WIN32_FIND_DATA FindFileData;
+WIN32_FIND_DATAW FindFileData;
 HANDLE hFind;
 
    // Always Initialize Memory
@@ -169,27 +170,35 @@ HANDLE hFind;
 
          // ok, this is should be easy
          // automatic search of IM database directory
-         ZeroMemory( tbuffer, 256 );
-         GetUserName( tbuffer, (LPDWORD)&tint );
-         sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Documents and Settings\\%s\\Local Settings\\Application Data\\IM\\Identities\\*", tbuffer );
-         hFind = FindFirstFile(im_header_filename, &FindFileData);  // should be .
-         if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, ".") == 0 ) {
-            FindNextFile( hFind, &FindFileData );  // should be ..
-            if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && strcmp( FindFileData.cFileName, "..") == 0 ) {
-               FindNextFile( hFind, &FindFileData );  // should be the real and only directory...
+
+		 PWSTR appDataPath;
+		 SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &appDataPath);
+		 if (!appDataPath)
+			 return 1;
+		 wcscpy_s(im_header_filename_w, appDataPath);
+		 wcscat_s(im_header_filename_w, L"\\IM\\Identities\\*");
+		 
+		 
+         hFind = FindFirstFileW(im_header_filename_w, &FindFileData);  // should be .
+         if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && wcscmp( FindFileData.cFileName, L".") == 0 ) {
+            FindNextFileW( hFind, &FindFileData );  // should be ..
+            if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY && wcscmp( FindFileData.cFileName, L"..") == 0 ) {
+               FindNextFileW( hFind, &FindFileData );  // should be the real and only directory...
                if( FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY ) {
-                  sprintf_s( im_header_filename, sizeof( im_header_filename ), "C:\\Documents and Settings\\%s\\Local Settings\\Application Data\\IM\\Identities\\%s\\Message Store", tbuffer, FindFileData.cFileName );
-                  if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
-                     SetDlgItemText( hdwnd, IDC_EDIT1, im_header_filename );
+				  wchar_t storename[MAX_CHAR];
+				  swprintf_s(storename, L"%s\\IM\\Identities\\%s\\Message Store", appDataPath, FindFileData.cFileName);
+                  if( GetFileAttributesW( storename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                     SetDlgItemTextW( hdwnd, IDC_EDIT1, storename );
                   } 
                   // insert automatic attachment directory here
-                  strcat_s( im_header_filename, MAX_CHAR, "\\Attachments");
-                  if( GetFileAttributes( im_header_filename ) == FILE_ATTRIBUTE_DIRECTORY ) {
-                     SetDlgItemText( hdwnd, IDC_EDIT2, im_header_filename );         
+                  wcscat_s( storename, L"\\Attachments");
+                  if( GetFileAttributesW( storename ) == FILE_ATTRIBUTE_DIRECTORY ) {
+                     SetDlgItemTextW( hdwnd, IDC_EDIT2, storename );         
                   }
                }
             }
          }
+		 CoTaskMemFree(appDataPath);
          FindClose( hFind );
       return 1;
 
