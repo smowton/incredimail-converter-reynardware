@@ -257,7 +257,7 @@ void im_to_eml(char* im_filename, const char* attachments_path, const char* eml_
 		case FMS_START:
 			if (strstr(buf, "Content-Type: multipart"))
 				state = FMS_CONTENTTYPE;
-			break;
+			// Fall through
 		case FMS_CONTENTTYPE:
 			if (strstr(buf, "imbndary="))
 				state = FMS_HEADEREND1;
@@ -313,7 +313,7 @@ void im_to_eml(char* im_filename, const char* attachments_path, const char* eml_
 			case FMS_START:
 				if (strstr(buf, "Content-Type: multipart"))
 					state = FMS_CONTENTTYPE;
-				break;
+				// Fall through
 			case FMS_CONTENTTYPE:
 			{
 				char* boundary_loc = strstr(buf, "imbndary=");
