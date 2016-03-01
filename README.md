@@ -1,5 +1,7 @@
 # incredimail-converter-reynardware
 
+**Quick start: [Download the latest release](https://github.com/smowton/incredimail-converter-reynardware/releases)**
+
 This version of Incredimail Converter is derived from the original developed by Reynardware (and specifically David P. Owczarski) in 2009-2010. I adapted it to deal with IncrediMail 2.5's database format, which no longer uses .imm files but rather stores messages individually as .iml files. This further development is not endorsed by Reynardware. However I am very grateful for their releasing the code under a friendly license (the Mozilla Public License) thus saving me much effort!
 
 To convert an IncrediMail 2.5 database, choose to convert either the directory `c:\users\yourusername\AppData\Local\IM\Identities\{some_uuid}\Message Store`, or explicitly pick the `MessageStore.db` file within. A directory called MessageStore will be created next to MessageStore.db which will contain the extracted Incredimail folder tree.
