@@ -594,6 +594,8 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 	  messages_dir.erase(truncate_off);
 	  messages_dir.append("\\Messages");
 
+	  std::size_t n_failures = 0;
+
       for( i = 0; i < e_count; i++ ) {
          offset = 0;
 
@@ -631,9 +633,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 			 message_attachment_dir = messages_dir + "\\" + subfolder + "\\" + headerid + "\\Attachments";
 
 			 if (!CopyFile(source_path.c_str(), temp_filename, FALSE)) {
-				 MessageBox(global_hwnd, "Failed copying IML file!", "Error!", MB_OK);
-				 sqlite3_close(db);
-				 return;
+				 ++n_failures;
 			 }
 
 		 }
@@ -679,6 +679,11 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
       // clean up, state it was done and delete the temp directory
       sprintf_s( debug_str, MAX_CHAR, "%d of %d DONE!",i ,e_count );
       SetDlgItemText( global_hwnd, IDC_XOFX, debug_str );
+
+	  if (n_failures != 0) {
+		  std::string complaint = "Couldn't find " + std::to_string(n_failures) + " out of " + std::to_string(e_count) + " expected message files";
+		  MessageBox(global_hwnd, complaint.c_str(), "Error!", MB_OK);
+	  }
 
    }
    email_thread = THREAD_COMPLETED;
