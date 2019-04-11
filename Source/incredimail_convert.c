@@ -538,7 +538,7 @@ void Incredimail_2_Maildir_Email_Count(const char *filename, int *email_total, i
 	sqlite3_stmt *stmt;
 
 	const char* allMailQuery = "select count(*) from Headers where Location != \"\"";
-	const char* notDeletedQuery = "select count(*) from Headers where Location != \"\" and deleted = 0";
+	const char* deletedQuery = "select count(*) from Headers where Location != \"\" and deleted = 1";
 
 	*email_total = 0;
 	*deleted_emails = 0;
@@ -561,7 +561,7 @@ void Incredimail_2_Maildir_Email_Count(const char *filename, int *email_total, i
 	sqlite3_reset(stmt);
 	sqlite3_finalize(stmt);
 
-	if (sqlite3_prepare_v2(db, notDeletedQuery, -1, &stmt, NULL) != SQLITE_OK)
+	if (sqlite3_prepare_v2(db, deletedQuery, -1, &stmt, NULL) != SQLITE_OK)
 		goto outdb;
 
 	if (sqlite3_step(stmt) != SQLITE_ROW)
