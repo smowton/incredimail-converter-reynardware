@@ -498,14 +498,38 @@ outdb:
 
 }
 
-enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search) {
+static int endswith(const char *s, const char *suffix) {
+	size_t suffix_len = strlen(suffix);
+	size_t s_len = strlen(s);
+
+	return s_len >= suffix_len && !strcmp(s + (s_len - suffix_len), suffix);
+}
+
+enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *file_or_directory) {
 	char temp_path[MAX_CHAR];
 	enum INCREDIMAIL_VERSIONS ret = INCREDIMAIL_VERSION_UNKNOWN;
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 
+	size_t file_or_directory_len = strlen(file_or_directory);
+	const char *file_or_directory_end = file_or_directory + file_or_directory_len;
+
+	// First check if a specific file was given:
+	const char *xe_suffix = ".imh";
+	const char *im2_mbox_suffix = "\\containers.db";
+	const char *im2_maildir_suffix = "\\messageStore.db";
+	
+	if (endswith(file_or_directory, xe_suffix))
+		return INCREDIMAIL_XE;
+	else if (endswith(file_or_directory, im2_mbox_suffix) && testimdb(file_or_directory))
+		return INCREDIMAIL_2;
+	else if (endswith(file_or_directory, im2_maildir_suffix) && testimdb(file_or_directory))
+		return INCREDIMAIL_2_MAILDIR;
+
+	// Otherwise try searching a directory:
+
 	// is there an Incredimail XE header file 
-	strcpy(temp_path, directory_search);
+	strcpy(temp_path, file_or_directory);
 	strcat(temp_path, "\\*.imh");
 	hFind = FindFirstFile(temp_path, &FindFileData);
 	FindClose(hFind);
@@ -515,7 +539,7 @@ enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search) {
 	}
 
 	// is there an Incredimail 2 database, i.e. containers.db 
-	strcpy(temp_path, directory_search);
+	strcpy(temp_path, file_or_directory);
 	strcat(temp_path, "\\containers.db");
 
 	if (testimdb(temp_path)) {
@@ -523,7 +547,7 @@ enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search) {
 	}
 	else {
 		// Is there a messageStore.db, indicating maildir format?
-		strcpy(temp_path, directory_search);
+		strcpy(temp_path, file_or_directory);
 		strcat(temp_path, "\\messageStore.db");
 		if (testimdb(temp_path))
 			ret = INCREDIMAIL_2_MAILDIR;

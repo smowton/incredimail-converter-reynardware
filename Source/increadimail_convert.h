@@ -133,7 +133,7 @@ extern "C" {
 	//
 	//***************************************************************************
 
-	enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *directory_search);
+	enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *file_or_directory);
 	//***************************************************************************
 	// INPUTS:
 	//
