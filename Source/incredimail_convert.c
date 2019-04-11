@@ -245,10 +245,6 @@ void im_to_eml(char* im_filename, const char* attachments_path, const char* eml_
 	FILE* fin = fopen(im_filename, "r");
 	enum find_multipart_states state = FMS_START;
 
-	if (strstr(eml_filename, "airplane parts") && strstr(eml_filename, "email30.eml")) {
-		printf("Hit!\n");
-	}
-
 	while (fgets(buf, 4096, fin) && first_boundary[0] == '\0') {
 		int linelen = strlen(buf);
 		if (linelen > 0 && buf[linelen - 1] != '\n')
