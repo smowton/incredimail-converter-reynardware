@@ -579,7 +579,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 		  sqlite3_reset(stmt);
 		  sqlite3_finalize(stmt);
 
-		  if (sqlite3_prepare_v2(db, "select HeaderID, ContainerID, Location, Deleted from Headers", -1, &stmt, NULL) != SQLITE_OK) {
+		  if (sqlite3_prepare_v2(db, "select HeaderID, ContainerID, Location, Deleted from Headers where Location != \"\"", -1, &stmt, NULL) != SQLITE_OK) {
 			  sqlite3_close(db);
 			  MessageBox(global_hwnd, "Headers query failed", "Error!", MB_OK);
 			  return;
