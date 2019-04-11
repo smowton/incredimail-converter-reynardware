@@ -629,6 +629,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 
 			 if (!CopyFile(source_path.c_str(), temp_filename, FALSE)) {
 				 ++n_failures;
+				 continue;
 			 }
 
 		 }
