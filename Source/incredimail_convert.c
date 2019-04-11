@@ -498,14 +498,14 @@ outdb:
 
 }
 
-static int endswith(const char *s, const char *suffix) {
+static int endswith_case_insensitive(const char *s, const char *suffix) {
 	size_t suffix_len = strlen(suffix);
 	size_t s_len = strlen(s);
 
-	return s_len >= suffix_len && !strcmp(s + (s_len - suffix_len), suffix);
+	return s_len >= suffix_len && !stricmp(s + (s_len - suffix_len), suffix);
 }
 
-enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *file_or_directory) {
+enum INCREDIMAIL_VERSIONS FindIncredimailVersion(const char *file_or_directory) {
 	char temp_path[MAX_CHAR];
 	enum INCREDIMAIL_VERSIONS ret = INCREDIMAIL_VERSION_UNKNOWN;
 	WIN32_FIND_DATA FindFileData;
@@ -519,11 +519,11 @@ enum INCREDIMAIL_VERSIONS FindIncredimailVersion(char *file_or_directory) {
 	const char *im2_mbox_suffix = "\\containers.db";
 	const char *im2_maildir_suffix = "\\messageStore.db";
 	
-	if (endswith(file_or_directory, xe_suffix))
+	if (endswith_case_insensitive(file_or_directory, xe_suffix))
 		return INCREDIMAIL_XE;
-	else if (endswith(file_or_directory, im2_mbox_suffix) && testimdb(file_or_directory))
+	else if (endswith_case_insensitive(file_or_directory, im2_mbox_suffix) && testimdb(file_or_directory))
 		return INCREDIMAIL_2;
-	else if (endswith(file_or_directory, im2_maildir_suffix) && testimdb(file_or_directory))
+	else if (endswith_case_insensitive(file_or_directory, im2_maildir_suffix) && testimdb(file_or_directory))
 		return INCREDIMAIL_2_MAILDIR;
 
 	// Otherwise try searching a directory:

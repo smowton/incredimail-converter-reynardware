@@ -267,9 +267,7 @@ HANDLE hFind;
                   openfile.lpstrFilter = filter;
 
                   if( GetOpenFileName( &openfile ) == TRUE ) {
-                     // get the directory (reuse varible im_header_filename)
-                     strncpy_s( im_header_filename, MAX_CHAR , im_database_filename, strlen( im_database_filename ) - strlen( openfile.lpstrFileTitle ) );
-					 enum INCREDIMAIL_VERSIONS version = FindIncredimailVersion(im_header_filename);
+					 enum INCREDIMAIL_VERSIONS version = FindIncredimailVersion(im_database_filename);
 					 if(version == INCREDIMAIL_XE) {
                         strncpy_s( im_header_filename, MAX_CHAR ,im_database_filename, strlen( im_database_filename ) - 3 );
                         strcat_s( im_header_filename, MAX_CHAR, "imh" );
@@ -464,11 +462,8 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 
    SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_SETPOS, 0, 0 );                 // reset the progress bar to 0%
 
-   pdest = strrchr( im_database_filename, '\\' );
-   strncpy_s( temp_path, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
-
    // get incredimail version
-   incredimail_version = FindIncredimailVersion( temp_path );
+   incredimail_version = FindIncredimailVersion( im_database_filename );
    if( incredimail_version == INCREDIMAIL_XE ) {
       // get the header filename
       strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen( im_database_filename ) - 3 );
@@ -788,9 +783,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
             SetDlgItemText( global_hwnd, IDC_OVERALL_PERCENT, debug_str );
 
             // get incredimail version
-            pdest = strrchr( im_database_filename, '\\' );
-            strncpy_s( temp_path, sizeof(temp_path), im_database_filename, strlen( im_database_filename ) - strlen( pdest ) );
-            incredimail_version = FindIncredimailVersion( temp_path );
+            incredimail_version = FindIncredimailVersion( im_database_filename );
 			if (incredimail_version == INCREDIMAIL_VERSION_UNKNOWN) {
 				char msg[CHAR_MAX];
 				sprintf_s(msg, CHAR_MAX, "Directory %s doesn't match a known Incredimail version", temp_path);
