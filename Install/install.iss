@@ -4,7 +4,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{CDD74C77-BCAC-4545-A52B-FC1F575B9900}
 AppName=Incredimail Converter
-AppVerName=Incredimail Converter CS Release 2
+AppVerName=Incredimail Converter CS Release 3
 AppPublisher=Chris Smowton
 DefaultDirName={pf}\Incredimail Converter
 DefaultGroupName=Incredimail Converter
@@ -14,7 +14,7 @@ AppPublisherURL=https://github.com/smowton/incredimail-converter-reynardware
 AppSupportURL=https://github.com/smowton/incredimail-converter-reynardware
 AppUpdatesURL=https://github.com/smowton/incredimail-converter-reynardware
 OutputDir=..
-OutputBaseFilename=IncredimailConverter-CSr2-Setup
+OutputBaseFilename=IncredimailConverter-CSr3-Setup
 Compression=lzma/max
 PrivilegesRequired=none
 SolidCompression=yes
