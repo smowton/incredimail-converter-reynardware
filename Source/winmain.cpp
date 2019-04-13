@@ -735,19 +735,19 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
       }   
    } else {
 
-	  // This looks for *.imm, for the IncrediMail XE or non-maildir case.
-      total_count = FindDatabaseFiles( im_database_filename, temp_file_listing );
-	  if (total_count < 0) {
-		  // See if we can find an IncrediMail 2 Maildir store instead:
-		  std::string storename = std::string(im_database_filename) + "\\MessageStore.db";
-		  struct _stat buf;
-		  if (!_stat(storename.c_str(), &buf))
-			  process_emails2(storename.c_str(), im_attachments_directory);
-		  else {
-			  MessageBox(global_hwnd, "No .imm files and no MessageStore.db found within given directory", "Error!", MB_OK);
-		  }
+	  incredimail_version = FindIncredimailVersion(im_database_filename);
+      
+	  if (incredimail_version == INCREDIMAIL_2_MAILDIR) {
+		  std::string messagestore_path = std::string(im_database_filename) + "\\MessageStore.db";
+		  process_emails2(messagestore_path.c_str(), im_attachments_directory);
 		  return;
 	  }
+	  else if (incredimail_version == INCREDIMAIL_VERSION_UNKNOWN) {
+		  MessageBox(global_hwnd, "No .imm files and no MessageStore.db found within given directory", "Error!", MB_OK);
+		  exit(1);
+	  }
+
+	  total_count = FindDatabaseFiles(im_database_filename, temp_file_listing);
 	  
       // set the progress bar 2
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETRANGE, 0, (LPARAM) MAKELPARAM (0, total_count));

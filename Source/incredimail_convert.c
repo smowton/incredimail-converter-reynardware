@@ -534,8 +534,12 @@ enum INCREDIMAIL_VERSIONS FindIncredimailVersion(const char *file_or_directory) 
 	hFind = FindFirstFile(temp_path, &FindFileData);
 	FindClose(hFind);
 
+	const char *found_files[3];
+	size_t n_tests_succeeded = 0;
+
 	if (hFind != INVALID_HANDLE_VALUE) {
 		ret = INCREDIMAIL_XE;
+		found_files[n_tests_succeeded++] = "* At least one .imh file, as used by Incredimail XE\n";
 	}
 
 	// is there an Incredimail 2 database, i.e. containers.db 
@@ -544,13 +548,42 @@ enum INCREDIMAIL_VERSIONS FindIncredimailVersion(const char *file_or_directory) 
 
 	if (testimdb(temp_path)) {
 		ret = INCREDIMAIL_2;
+		found_files[n_tests_succeeded++] = "* A containers.db file, as used by earlier versions of Incredimail 2\n";
 	}
-	else {
-		// Is there a messageStore.db, indicating maildir format?
-		strcpy(temp_path, file_or_directory);
-		strcat(temp_path, "\\messageStore.db");
-		if (testimdb(temp_path))
-			ret = INCREDIMAIL_2_MAILDIR;
+
+	// Is there a messageStore.db, indicating maildir format?
+	strcpy(temp_path, file_or_directory);
+	strcat(temp_path, "\\messageStore.db");
+	if (testimdb(temp_path)) {
+		ret = INCREDIMAIL_2_MAILDIR;
+		found_files[n_tests_succeeded++] = "* A MessageStore.db file, as used by newer versions of Incredimail 2\n";
+	}
+
+	if (n_tests_succeeded > 1) {
+		const char *msgHeader = "Multiple Incredimail database types were found:\n";
+		const char *msgFooter = "The last one (as the newest format) has been selected for now, but you might want to try selecting an individual database to convert";
+		size_t msgLength = strlen(msgHeader) + strlen(msgFooter);
+		for (size_t i = 0; i < n_tests_succeeded; ++i) {
+			msgLength += strlen(found_files[i]);
+		}
+		msgLength++; // For final null terminator
+
+		char *msg = (char *)malloc(msgLength);
+		msg[0] = '\0';
+		if (!msg) {
+			MessageBox(global_hwnd, msg, "Failed to allocate memory in FindIncredimailVersion", MB_OK);
+			exit(1);
+		}
+
+		strcat_s(msg, msgLength, msgHeader);
+		for (size_t i = 0; i < n_tests_succeeded; ++i) {
+			strcat_s(msg, msgLength, found_files[i]);
+		}
+		strcat_s(msg, msgLength, msgFooter);
+
+		MessageBox(global_hwnd, msg, "Warning", MB_OK);
+
+		free(msg);
 	}
 
     return ret;
