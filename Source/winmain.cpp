@@ -490,14 +490,32 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
       // the export directory is based off of the database name
 	  const char* extsep = strrchr(im_database_filename, '.');
 	  const char* dirsep = strrchr(im_database_filename, '\\');
-	  if (extsep != NULL && (dirsep == NULL || dirsep < extsep))
-		  strncpy_s(export_directory, MAX_CHAR, im_database_filename, (extsep - im_database_filename));
+	  if (incredimail_version == INCREDIMAIL_2_MAILDIR) {
+		  if (dirsep == NULL) {
+			  strcpy_s(export_directory, im_database_filename);
+			  strcat_s(export_directory, ".exported");
+		  }
+		  else {
+			  strncpy_s(export_directory, MAX_CHAR, im_database_filename, (dirsep - im_database_filename));
+			  strcat_s(export_directory, "\\Exported Incredimail Messages");
+		  }
+      }
 	  else {
-		  strcpy_s(export_directory, im_database_filename);
-		  strcat_s(export_directory, ".exported");
+		   if (extsep != NULL && (dirsep == NULL || dirsep < extsep))
+			   strncpy_s(export_directory, MAX_CHAR, im_database_filename, (extsep - im_database_filename));
+		   else {
+			   strcpy_s(export_directory, im_database_filename);
+			   strcat_s(export_directory, ".exported");
+		   }
 	  }
       DeleteDirectory( export_directory );
-      CreateDirectory( export_directory, NULL );
+	  if (!CreateDirectory(export_directory, NULL)) {
+		  std::string error = "Can't create " + std::string(export_directory);
+		  MessageBox(global_hwnd, error.c_str(), "Error!", MB_OK);
+		  return;
+	  }
+
+
       strcat_s( export_directory, MAX_CHAR, "\\" );
 
       // set the email and deleted count to zero
@@ -681,6 +699,9 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 		  MessageBox(global_hwnd, complaint.c_str(), "Error!", MB_OK);
 	  }
 
+	  std::string result_msg = "Exported messages from " + std::string(im_database_filename) + " to " + std::string(export_directory);
+	  MessageBox(global_hwnd, result_msg.c_str(), "Export Complete", MB_OK);
+
    }
    email_thread = THREAD_COMPLETED;
 }
@@ -760,6 +781,8 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 		  return;
 	  }
 
+	  std::string first_exported_file_description;
+
       do {
          ZeroMemory( im_database_filename, sizeof( im_database_filename ) );
          read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
@@ -803,6 +826,10 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
             if( pdest != 0 ) {
                export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
             }
+
+			if (first_exported_file_description.size() == 0) {
+				first_exported_file_description = std::string(im_database_filename) + " was exported to " + std::string(export_directory);
+			}
 
             DeleteDirectory( export_directory );
             CreateDirectory( export_directory, NULL );
@@ -881,6 +908,13 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
          }
       } while( read_length != 0 );
       CloseHandle( inputfile );
+
+	  if (total_count > 0) {
+		  std::string completion_msg = "Exported " + std::to_string(total_count) +
+			  " database files. The results are side-by-side with the database files: for example, " +
+			  first_exported_file_description;
+		  MessageBox(global_hwnd, completion_msg.c_str(), "Export complete", MB_OK);
+	  }
    }  
    email_thread = THREAD_COMPLETED;
 }
