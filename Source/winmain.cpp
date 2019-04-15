@@ -751,9 +751,27 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
    email_thread = THREAD_COMPLETED;
 }
 
+std::vector<std::string> FindDatabaseFiles(char *directory_search) {
+	std::vector<std::string> ret;
+	std::string database_filename = std::string(directory_search) + "\\*.imm";
+	
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind = FindFirstFile(database_filename.c_str(), &FindFileData);
+	if (hFind == INVALID_HANDLE_VALUE)
+		return ret;
+
+	ret.push_back(std::string(directory_search) + "\\" + std::string(FindFileData.cFileName));
+
+	while (FindNextFile(hFind, &FindFileData) != 0) {
+		ret.push_back(std::string(directory_search) + "\\" + std::string(FindFileData.cFileName));
+	}
+
+	FindClose(hFind);
+
+	return ret;
+}
 
 void WINAPI process_email_directory() {
-char temp_file_listing[MAX_CHAR];
 char im_database_filename[MAX_CHAR];
 char im_header_filename[MAX_CHAR];
 char im_attachments_directory[MAX_CHAR];
@@ -763,10 +781,7 @@ char new_eml_filename[MAX_CHAR];
 char temp_path[MAX_CHAR];
 char temp_filename[MAX_CHAR];
 
-HANDLE inputfile;
-
-int read_length = 1;
-int e_count, d_count, i, j, total_count;
+int e_count, d_count, i, j;
 int result_database, result_attachment;
 int deleted_email, export_all_email;
 unsigned int offset, size;
@@ -779,7 +794,6 @@ char *pdest;
 enum INCREDIMAIL_VERSIONS incredimail_version;
 
    // Zero out the string names
-   ZeroMemory( temp_file_listing, sizeof( temp_file_listing ) );
    ZeroMemory( im_attachments_directory, sizeof( im_attachments_directory ) );
    ZeroMemory( im_header_filename, sizeof( im_header_filename ) );
    ZeroMemory( im_database_filename, sizeof( im_database_filename ) );
@@ -813,46 +827,26 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 		  exit(1);
 	  }
 
-	  total_count = FindDatabaseFiles(im_database_filename, temp_file_listing);
+	  std::vector<std::string> database_files = FindDatabaseFiles(im_database_filename);
 	  
       // set the progress bar 2
-      SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETRANGE, 0, (LPARAM) MAKELPARAM (0, total_count));
+      SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETRANGE, 0, (LPARAM) MAKELPARAM (0, database_files.size()));
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETSTEP, 1, 0 );
       SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_SETPOS, 0, 0 );
 
-      inputfile  = CreateFile(temp_file_listing, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-	  if (inputfile == INVALID_HANDLE_VALUE) {
-		  MessageBox(global_hwnd, "Can't open temporary file", "Error!", MB_OK);
-		  return;
-	  }
-
 	  std::string first_exported_file_description;
 
-      do {
-         ZeroMemory( im_database_filename, sizeof( im_database_filename ) );
-         read_length = ReadOneLine( inputfile, im_database_filename, MAX_CHAR );
-         // cleaning up the line feeds from FindDatabaseFiles function
-         i = (int) strlen( im_database_filename );
-		 if (i < 2) {
-			 char msg[MAX_CHAR];
-			 snprintf(msg, MAX_CHAR, "Ignoring invalid filename %s", im_database_filename);
-			 MessageBox(global_hwnd, msg, "Error!", MB_OK);
-			 continue;
-		 }
-
-         im_database_filename[i-2] = 0;
-
-         if( read_length != 0 ) {
+	  for(const std::string &im_database_filename : database_files) {
             SendDlgItemMessage( global_hwnd, IDC_PROGRESS2, PBM_STEPIT, 0, 0 );                 // set the overall progress bar
             SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_SETPOS, 0, 0 );                 // reset the progress bar to 0%
 
             j++;
-            percent_complete =  ( ( (float) (j)/ (float) total_count) ) * 100;
-            sprintf_s( debug_str, MAX_CHAR, "%d of %d (%0.0f%%)", j ,total_count, percent_complete );
+            percent_complete =  ( ( (float) (j)/ (float) database_files.size()) ) * 100;
+            sprintf_s( debug_str, MAX_CHAR, "%d of %d (%0.0f%%)", j , database_files.size(), percent_complete );
             SetDlgItemText( global_hwnd, IDC_OVERALL_PERCENT, debug_str );
 
             // get incredimail version
-            incredimail_version = FindIncredimailVersion( im_database_filename );
+            incredimail_version = FindIncredimailVersion( im_database_filename.c_str() );
 			if (incredimail_version == INCREDIMAIL_VERSION_UNKNOWN) {
 				char msg[CHAR_MAX];
 				sprintf_s(msg, CHAR_MAX, "Directory %s doesn't match a known Incredimail version", temp_path);
@@ -861,19 +855,19 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 
             if( incredimail_version == INCREDIMAIL_XE ) {
                // get the header filename
-               strncpy_s( im_header_filename, MAX_CHAR, im_database_filename, strlen(im_database_filename) - 4 );
+               strncpy_s( im_header_filename, MAX_CHAR, im_database_filename.c_str(), im_database_filename.size() - 4 );
                strcat_s( im_header_filename, MAX_CHAR, ".imh" );
             }
 
             // the export directory is based off of the database name
-            strcpy_s( export_directory, MAX_CHAR, im_database_filename );
+            strcpy_s( export_directory, MAX_CHAR, im_database_filename.c_str() );
             pdest = strrchr( export_directory, '.' );
             if( pdest != 0 ) {
                export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
             }
 
 			if (first_exported_file_description.size() == 0) {
-				first_exported_file_description = std::string(im_database_filename) + " was exported to " + std::string(export_directory);
+				first_exported_file_description = im_database_filename + " was exported to " + std::string(export_directory);
 			}
 
             DeleteDirectory( export_directory );
@@ -888,7 +882,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
                email_count( im_header_filename, &e_count, &d_count );
                SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: Incredimail XE" );
             } else {
-               Incredimail_2_Email_Count( im_database_filename, &e_count, &d_count );
+               Incredimail_2_Email_Count( im_database_filename.c_str(), &e_count, &d_count );
                SetDlgItemText( global_hwnd, IDC_STATIC6, "Version: Incredimail 2" );
             }
 
@@ -897,7 +891,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
             sprintf_s( debug_str, MAX_CHAR, "Deleted Emails: %d", d_count );
             SetDlgItemText( global_hwnd, IDC_STATIC8, debug_str );
 
-            sprintf_s( debug_str, MAX_CHAR, "Database: %s", im_database_filename );
+            sprintf_s( debug_str, MAX_CHAR, "Database: %s", im_database_filename.c_str() );
             pdest = strrchr( debug_str, '\\' );
             sprintf_s( debug_str, MAX_CHAR, "Database: %s", &pdest[1] );
             SetDlgItemText( global_hwnd, IDC_DATABASE_NAME, debug_str );
@@ -916,7 +910,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
                if( incredimail_version == INCREDIMAIL_XE ) {
                   get_email_offset_and_size( im_header_filename, &offset, &size, i, e_count, &deleted_email );
                } else {
-                  Incredimail_2_Get_Email_Offset_and_Size( im_database_filename, &offset, &size, i, &deleted_email );
+                  Incredimail_2_Get_Email_Offset_and_Size( im_database_filename.c_str(), &offset, &size, i, &deleted_email );
                }
 
                if( (export_all_email == BST_CHECKED) || !deleted_email ) {
@@ -927,10 +921,10 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
                      GetTempFileName( temp_path, "eml", 0, temp_filename );
                   }
                   // extract the eml file in the temp directory
-                  extract_eml_files( im_database_filename, temp_filename, offset, size );
+                  extract_eml_files( im_database_filename.c_str(), temp_filename, offset, size );
 
                   ZeroMemory( export_directory, sizeof( export_directory ) );
-                  strcpy_s( export_directory, MAX_CHAR, im_database_filename);
+                  strcpy_s( export_directory, MAX_CHAR, im_database_filename.c_str());
                   pdest = strrchr( export_directory, '.' );
                   if( pdest != 0 ) {
                      export_directory[strlen(export_directory) - strlen(pdest)] = '\0';
@@ -950,12 +944,10 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
                SendDlgItemMessage( global_hwnd, IDC_PROGRESS1, PBM_STEPIT, 0, 0 );
                SendMessage( global_hwnd, WM_PAINT, 0, 0 );
             }
-         }
-      } while( read_length != 0 );
-      CloseHandle( inputfile );
+      }
 
-	  if (total_count > 0) {
-		  std::string completion_msg = "Exported " + std::to_string(total_count) +
+	  if (database_files.size() > 0) {
+		  std::string completion_msg = "Exported " + std::to_string(database_files.size()) +
 			  " database files. The results are side-by-side with the database files: for example, " +
 			  first_exported_file_description;
 		  MessageBox(global_hwnd, completion_msg.c_str(), "Export complete", MB_OK);

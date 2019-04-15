@@ -163,29 +163,23 @@ char extract_data[1024];
 
 void insert_attachments( char *im_filename, const char *attachments_path, const char *final_email_filename ) {
 
-HANDLE inputfile, outputfile, encoded_file;
-HANDLE encode64_input_file, encode64_output_file;
+   FILE *inputfile, *outputfile;
+   FILE *encode64_input_file;
 
-DWORD byteswritten;
-char string_1[512], string_2[512];
+char string_1[512];
 char attachment_name[512];
-int attachment_length, read_length, read_encoded_length;
+int attachment_length;
 
 char temp_path[MAX_CHAR];
-char temp_filename[MAX_CHAR];
 
 
-   inputfile  = CreateFile(im_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-   outputfile = CreateFile(final_email_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-   read_length = 1;
-
+   inputfile = fopen(im_filename, "rb");
+   outputfile = fopen(final_email_filename, "wb");
+   
    GetTempPath( sizeof( temp_path ), temp_path );
 
    if( inputfile && outputfile ) {
-      while( read_length != 0 ) {
-         memset( string_1, 0, MAX_CHAR );
-         read_length = ReadOneLine( inputfile, string_1, MAX_CHAR );
-
+      while( fgets(string_1, 512, inputfile) ) {
          // search for the ATTACHMENT string
          if( strncmp( ATTACHMENT,  string_1, 34 ) == 0 ) {
             // fix the attachment string
@@ -195,35 +189,18 @@ char temp_filename[MAX_CHAR];
             strncat( attachment_name, &string_1[34], attachment_length - 36 );  
 
             // encode the attachement
-            GetTempFileName( temp_path, "att", 0, temp_filename );
-            encode64_input_file  = CreateFile(attachment_name, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-            encode64_output_file = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY, NULL );
-            if( encode64_input_file && encode64_output_file  ) {
-               encode( encode64_input_file, encode64_output_file, 72 );
-               CloseHandle( encode64_input_file );
-               CloseHandle( encode64_output_file );
-
-               encoded_file = CreateFile(temp_filename, GENERIC_READ, 0x0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-               if( encoded_file ) {
-                  read_encoded_length = 1;
-                  while( read_encoded_length ) {
-                     memset( string_2, 0, MAX_CHAR );
-                     read_encoded_length = ReadOneLine( encoded_file, string_2, MAX_CHAR );
-                     if( outputfile ) {
-                        WriteFile( outputfile, string_2, read_encoded_length, &byteswritten, NULL );
-                     }
-                  }
-                  CloseHandle( encoded_file );
-                  DeleteFile( temp_filename );
-               }
-            }
+			encode64_input_file = fopen(attachment_name, "rb");
+			if (encode64_input_file) {
+				encode(encode64_input_file, outputfile, 72);
+				fclose(encode64_input_file);
+			}
          } else {
-            WriteFile( outputfile, string_1, read_length, &byteswritten, NULL );
+            fwrite( string_1, 1, strlen(string_1), outputfile );
          }
       }
    }
-   CloseHandle( inputfile );
-   CloseHandle( outputfile );
+   fclose( inputfile );
+   fclose( outputfile );
 }
 
 enum find_multipart_states {
@@ -358,88 +335,6 @@ char temp_version[5];
 
    strcpy( version, temp_version );
 
-}
-
-int ReadOneLine( HANDLE infile, char *buffer, int max_line_length ) {
-DWORD byteread;
-char byte;   
-int index, end = 0;
-
-   // initialize variables
-   byteread = 1;
-   end = 0;
-   index = 0;
-
-   // loop will end if:
-   //    (1) there are no more bytes to read in the file
-   //    (2) a DOS/Windows line return is found
-   //    (3) max line length in the buffer
-   while( byteread != 0 && !end && index < max_line_length ) {
-      ReadFile( infile, &byte, 0x01, &byteread, NULL );
-      if( byteread != 0 ) {
-         buffer[index] = byte;
-         index++;
-         // test if it is line feed
-         if( byte == 0x0D ) {
-            ReadFile( infile, &byte, 0x01, &byteread, NULL );
-            if( byte == 0x0A && byteread != 0 ) {
-               buffer[index] = byte;
-               index++;
-               end = 1;
-            }
-         }
-      }
-   }
-
-   return index;
-}
-
-int FindDatabaseFiles( char *directory_search, char *temp_file_listing ) {
-WIN32_FIND_DATA FindFileData;
-HANDLE hFind, list_output;
-
-char database_filename[MAX_CHAR];
-char temp_path[MAX_CHAR];
-char temp_filename[MAX_CHAR];
-char temp_string[MAX_CHAR];
-
-DWORD result_create_temp, dummy;
-
-int total_count = 1;
-
-   ZeroMemory( &database_filename, sizeof( database_filename ) );
-   ZeroMemory( &temp_path, sizeof( temp_path ) );
-   ZeroMemory( &temp_filename, sizeof( temp_filename ) );
-   ZeroMemory( &temp_string, sizeof( temp_string ) );
-
-   strcpy( database_filename, directory_search );
-   strcat( database_filename, "\\*.imm" );
-
-   // Get temp windows path
-   result_create_temp = GetTempPath( sizeof( temp_path ), temp_path );
-   GetTempFileName( temp_path, "lst", 0, temp_filename );
-   
-   list_output = CreateFile(temp_filename, GENERIC_WRITE, 0x0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-   
-   hFind = FindFirstFile(database_filename, &FindFileData);
-   if (hFind == INVALID_HANDLE_VALUE)
-	   return -1;
-
-   sprintf(temp_string, "%s\\%s%c%c", directory_search, FindFileData.cFileName, 0x0D, 0x0A );
-   WriteFile( list_output, temp_string, (DWORD) strlen( temp_string ), &dummy, NULL );
-
-   while( FindNextFile(hFind, &FindFileData) != 0 ) {
-      sprintf(temp_string, "%s\\%s%c%c", directory_search, FindFileData.cFileName, 0x0D, 0x0A );
-      WriteFile( list_output, temp_string, (DWORD) strlen( temp_string ), &dummy, NULL );
-      total_count++;
-   }
-
-   strcpy( temp_file_listing, temp_filename );
-
-   FindClose( hFind );
-   CloseHandle( list_output );
-
-   return total_count;
 }
 
 static int testimdb(const char* filename) {

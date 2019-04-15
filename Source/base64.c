@@ -16,30 +16,25 @@ const char cb64[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678
 }
 
 
-void encode( HANDLE infile, HANDLE outfile, int linesize ) {
+void encode( FILE *infile, FILE *outfile, int linesize ) {
 
 unsigned char in[3], out[4];
 int len, blocksout = 0;
-int byteread, temp;
 char new_line[] = {0x0D, 0x0A};
 
-   byteread = 1;
-
-   while( byteread != 0 ) {
-      len = 0;
-      memset( in, 0, sizeof( in ) );
-      ReadFile( infile, in, 0x03, &byteread, NULL );
-      len = byteread;
-      if( len ) {
-         encodeblock( in, out, len );
-         WriteFile( outfile, out, 0x04, &temp, NULL );
-         blocksout++;
-      }
-      if( blocksout >= (linesize/4) || byteread == 0 ) {
+   while( (len = fread(in, 1, 3, infile)) >= 1 ) {
+      encodeblock( in, out, len );
+	  fwrite(out, 1, 4, outfile);
+      blocksout++;
+      if( blocksout >= (linesize/4) ) {
          if( blocksout ) {
-            WriteFile( outfile, new_line, sizeof( new_line ), &temp, NULL );
+			fwrite(new_line, 1, sizeof(new_line), outfile);
          }
          blocksout = 0;
       }
+   }
+
+   if (blocksout != 0) {
+	   fwrite(new_line, 1, sizeof(new_line), outfile);
    }
 }

@@ -32,7 +32,7 @@ void encodeblock( unsigned char in[3], unsigned char out[4], int len );
 //
 //***************************************************************************
 
-void encode( HANDLE infile, HANDLE outfile, int linesize );
+void encode( FILE *infile, FILE *outfile, int linesize );
 //***************************************************************************
 // INPUTS:
 //
