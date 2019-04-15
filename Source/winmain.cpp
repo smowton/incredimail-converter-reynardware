@@ -963,3 +963,7 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
    }  
    email_thread = THREAD_COMPLETED;
 }
+
+int DeleteDirectory(const char *sPath) {
+	return system((std::string("rd /s /q \"") + sPath + "\"").c_str());
+}

@@ -360,27 +360,6 @@ char temp_version[5];
 
 }
 
-int DeleteDirectory(const char *sPath) {
-  SHFILEOPSTRUCT fileop;
-  int ret;
-
-  ZeroMemory( &fileop, sizeof( SHFILEOPSTRUCT ) );
-
-  fileop.hwnd                  = NULL;
-  fileop.wFunc                 = FO_DELETE;
-  fileop.pTo                   = NULL;
-  fileop.fFlags                = FOF_NOCONFIRMATION|FOF_SILENT;  
-  fileop.fAnyOperationsAborted = FALSE;
-  fileop.lpszProgressTitle     = NULL;
-  fileop.hNameMappings         = NULL;
-
-  fileop.pFrom = sPath;
-
-  ret = SHFileOperation(&fileop);
-
-  return( ret );
-}
-
 int ReadOneLine( HANDLE infile, char *buffer, int max_line_length ) {
 DWORD byteread;
 char byte;   
