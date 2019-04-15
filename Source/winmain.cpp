@@ -402,6 +402,7 @@ struct im2_maildir_folder {
 	std::vector<struct im2_maildir_folder*> children;
 	std::string id;
 	std::string foldername;
+	std::string account;
 
 	im2_maildir_folder() : parent(0) {}
 
@@ -415,6 +416,26 @@ struct im2_maildir_folder {
 			(*it)->create_directories(path, container_to_dir);
 		return true;
 
+	}
+
+	std::string get_unique_account_name() const {
+		if (account.length() != 0)
+			return account;
+
+		std::string unique_account_name;
+		for (const auto child : children) {
+			std::string child_account = child->get_unique_account_name();
+			if (child_account.length() != 0) {
+				if (unique_account_name.length() == 0)
+					unique_account_name = child_account;
+				else if (unique_account_name != child_account) {
+					unique_account_name = "";
+					break;
+				}
+			}
+		}
+
+		return unique_account_name;
 	}
 
 };
@@ -571,6 +592,22 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 			  thisfolder.id = thisid;
 			  thisfolder.foldername = label;
 
+			  // Figure out the owning account name from message headers:
+			  std::string name_query = "select account, count(*) from headers where containerid = \"" + thisfolder.id + "\" group by account order by count(*) desc limit 1";
+			  sqlite3_stmt *name_statement = NULL;
+
+			  if (sqlite3_prepare_v2(db, name_query.c_str(), -1, &name_statement, NULL) != SQLITE_OK) {
+				  sqlite3_close(db);
+				  MessageBox(global_hwnd, "Account name query failed", "Error!", MB_OK);
+				  return;
+			  }
+
+			  if (sqlite3_step(name_statement) == SQLITE_ROW) {
+				  thisfolder.account = (const char *)sqlite3_column_text(name_statement, 0);
+			  }
+
+			  sqlite3_finalize(name_statement);
+
 		  }
 
 		  int rootidx = 0;
@@ -578,9 +615,17 @@ enum INCREDIMAIL_VERSIONS incredimail_version;
 
 			  if (it->second.parent)
 				  continue;
-			  char rootlabel[64];
-			  sprintf_s(rootlabel, "root folder %d", ++rootidx);
-			  it->second.foldername = rootlabel;
+
+			  // Try to inherit an account name:
+			  std::string unique_account_name = it->second.get_unique_account_name();
+
+			  if (unique_account_name.length() != 0) {
+				  it->second.foldername = "Account " + std::to_string(++rootidx) + " (" + unique_account_name + ")";
+			  }
+			  else {
+				  it->second.foldername = "Unnamed account " + std::to_string(++rootidx);
+			  }
+
 			  if (!it->second.create_directories(export_directory, container_to_dir)) {
 				  MessageBox(global_hwnd, "Failed to create some message directory", "Error!", MB_OK);
 				  sqlite3_close(db);
